@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MinimalBlog — Connexion Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-box">
+    <h2>MinimalBlog</h2>
+    <p>Espace d'administration — Connexion requise</p>
+
+    <div id="errorMsg" class="error-msg">❌ Identifiants incorrects.</div>
+
+    <div class="form-group">
+      <label>Login</label>
+      <input type="text" id="login" placeholder="admin" value="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="password" placeholder="••••••••" value="admin123" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="seConnecter()">
+      Se connecter →
+    </button>
+
+    <p style="margin-top:1.5rem;font-size:0.82rem;color:var(--gris);text-align:center">
+      <a href="../index.html" style="color:var(--accent)">← Retour au blog</a>
+    </p>
+
+    <div style="margin-top:1.5rem;padding:1rem;background:var(--fond);border-radius:4px;font-size:0.82rem;color:var(--gris)">
+      <strong>Demo :</strong> login = <code>admin</code> / mot de passe = <code>admin123</code>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script>
+  DB.init();
+
+  // Si déjà connecté, rediriger
+  if (DB.isLoggedIn()) {
+    window.location.href = 'dashboard.html';
+  }
+
+  function seConnecter() {
+    const login = document.getElementById('login').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (DB.login(login, password)) {
+      window.location.href = 'dashboard.html';
+    } else {
+      document.getElementById('errorMsg').style.display = 'block';
+    }
+  }
+
+  // Appuyer Entrée
+  document.getElementById('password').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') seConnecter();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Commentaires</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Minimal<span>Blog</span></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html"><span class="icon">📊</span> Tableau de bord</a></li>
+      <li><a href="articles.html"><span class="icon">📝</span> Articles</a></li>
+      <li><a href="commentaires.html" class="active"><span class="icon">💬</span> Commentaires</a></li>
+      <li><a href="../index.html" target="_blank"><span class="icon">🌐</span> Voir le blog</a></li>
+      <li><a href="#" onclick="seDeconnecter()"><span class="icon">🚪</span> Déconnexion</a></li>
+    </ul>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h2>Modération des Commentaires</h2>
+      <div id="badgePending" style="background:#dc3545;color:white;padding:0.3rem 0.9rem;border-radius:20px;font-size:0.85rem;font-weight:600"></div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border:1.5px solid var(--gris-clair);border-radius:5px;overflow:hidden;width:fit-content">
+        <button id="tabPending" onclick="filtrer('pending')"
+          style="padding:0.6rem 1.4rem;border:none;background:var(--noir);color:white;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;font-weight:600">
+          ⏳ En attente
+        </button>
+        <button id="tabApproved" onclick="filtrer('approved')"
+          style="padding:0.6rem 1.4rem;border:none;background:white;color:var(--noir);cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem">
+          ✅ Approuvés
+        </button>
+        <button id="tabAll" onclick="filtrer('all')"
+          style="padding:0.6rem 1.4rem;border:none;background:white;color:var(--noir);cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem">
+          📋 Tous
+        </button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Article</th>
+            <th>Pseudo</th>
+            <th>Email</th>
+            <th>Commentaire</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="coms-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script>
+  DB.init();
+  if (!DB.isLoggedIn()) window.location.href = 'login.html';
+  function seDeconnecter() { DB.logout(); window.location.href = 'login.html'; }
+
+  let filtreActif = 'pending';
+
+  function filtrer(f) {
+    filtreActif = f;
+    // Style des onglets
+    ['tabPending', 'tabApproved', 'tabAll'].forEach(id => {
+      document.getElementById(id).style.background = 'white';
+      document.getElementById(id).style.color = 'var(--noir)';
+      document.getElementById(id).style.fontWeight = '400';
+    });
+    const active = f === 'pending' ? 'tabPending' : f === 'approved' ? 'tabApproved' : 'tabAll';
+    document.getElementById(active).style.background = 'var(--noir)';
+    document.getElementById(active).style.color = 'white';
+    document.getElementById(active).style.fontWeight = '600';
+    chargerCommentaires();
+  }
+
+  function chargerCommentaires() {
+    let coms;
+    if (filtreActif === 'pending') coms = DB.getCommentaires(null, false);
+    else if (filtreActif === 'approved') coms = DB.getCommentaires(null, true);
+    else coms = DB.getCommentaires();
+
+    // Badge
+    const pending = DB.getCommentaires(null, false).length;
+    document.getElementById('badgePending').textContent =
+      pending > 0 ? `${pending} en attente` : 'Aucun en attente';
+    document.getElementById('badgePending').style.background = pending > 0 ? '#dc3545' : '#28a745';
+
+    const tbody = document.getElementById('coms-tbody');
+    if (coms.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Aucun commentaire trouvé.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = coms.map(c => {
+      const art = DB.getArticleById(c.article_id);
+      return `
+        <tr>
+          <td><strong>${c.id}</strong></td>
+          <td style="max-width:150px;font-size:0.85rem">
+            ${art ? `<a href="../article.html?id=${art.id}" target="_blank" style="color:var(--accent)">${escapeHtml(art.titre.substring(0, 40))}...</a>` : '—'}
+          </td>
+          <td><strong>${escapeHtml(c.pseudo)}</strong></td>
+          <td style="font-size:0.82rem;color:var(--gris)">${escapeHtml(c.email || '—')}</td>
+          <td style="max-width:200px;font-size:0.88rem">
+            ${escapeHtml(c.contenu.substring(0, 80))}${c.contenu.length > 80 ? '...' : ''}
+          </td>
+          <td style="font-size:0.82rem">${formatDateShort(c.date_commentaire)}</td>
+          <td>
+            <span class="status-badge ${c.approuve ? 'status-approved' : 'status-pending'}">
+              ${c.approuve ? '✅ Approuvé' : '⏳ En attente'}
+            </span>
+          </td>
+          <td>
+            <div class="actions">
+              ${!c.approuve ? `<button class="btn btn-success btn-sm" onclick="approuver(${c.id})">✓ Approuver</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="supprimer(${c.id})">🗑 Supprimer</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  filtrer('pending'); // Par défaut
+
+  function approuver(id) {
+    DB.approuverCommentaire(id);
+    showNotification('✅ Commentaire approuvé !');
+    chargerCommentaires();
+  }
+
+  function supprimer(id) {
+    if (!confirm('Supprimer définitivement ce commentaire ?')) return;
+    DB.supprimerCommentaire(id);
+    showNotification('Commentaire supprimé.', 'error');
+    chargerCommentaires();
+  }
+</script>
+</body>
+</html>

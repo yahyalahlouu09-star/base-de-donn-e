@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Tableau de bord</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Minimal<span>Blog</span></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html" class="active"><span class="icon">📊</span> Tableau de bord</a></li>
+      <li><a href="articles.html"><span class="icon">📝</span> Articles</a></li>
+      <li><a href="commentaires.html"><span class="icon">💬</span> Commentaires</a></li>
+      <li><a href="../index.html" target="_blank"><span class="icon">🌐</span> Voir le blog</a></li>
+      <li style="margin-top:auto"><a href="#" onclick="seDeconnecter()"><span class="icon">🚪</span> Déconnexion</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENU PRINCIPAL -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h2>Tableau de bord</h2>
+      <span style="color:var(--gris);font-size:0.9rem">Bienvenue, Admin</span>
+    </div>
+
+    <div class="admin-content">
+      <!-- Statistiques -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Articles récents -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="font-family:'Playfair Display',serif">Articles récents</h3>
+            <a href="articles.html" style="color:var(--accent);font-size:0.88rem">Voir tout →</a>
+          </div>
+          <div id="recentArticles"></div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="font-family:'Playfair Display',serif">Commentaires en attente</h3>
+            <a href="commentaires.html" style="color:var(--accent);font-size:0.88rem">Modérer →</a>
+          </div>
+          <div id="pendingComments"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script>
+  DB.init();
+
+  // Vérifier connexion
+  if (!DB.isLoggedIn()) window.location.href = 'login.html';
+
+  function seDeconnecter() {
+    DB.logout();
+    window.location.href = 'login.html';
+  }
+
+  // ---- Stats ----
+  const articles = DB.getArticles();
+  const publies = DB.getArticles('publie');
+  const brouillons = DB.getArticles('brouillon');
+  const allComs = DB.getCommentaires();
+  const comsPending = DB.getCommentaires(null, false);
+  const cats = DB.getCategories();
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-number">${articles.length}</div>
+      <div class="stat-label">Total articles</div>
+    </div>
+    <div class="stat-card" style="border-color:#28a745">
+      <div class="stat-number">${publies.length}</div>
+      <div class="stat-label">Articles publiés</div>
+    </div>
+    <div class="stat-card" style="border-color:#ffc107">
+      <div class="stat-number">${brouillons.length}</div>
+      <div class="stat-label">Brouillons</div>
+    </div>
+    <div class="stat-card" style="border-color:#17a2b8">
+      <div class="stat-number">${allComs.length}</div>
+      <div class="stat-label">Total commentaires</div>
+    </div>
+    <div class="stat-card" style="border-color:#dc3545">
+      <div class="stat-number">${comsPending.length}</div>
+      <div class="stat-label">En attente modération</div>
+    </div>
+    <div class="stat-card" style="border-color:#6f42c1">
+      <div class="stat-number">${cats.length}</div>
+      <div class="stat-label">Catégories</div>
+    </div>
+  `;
+
+  // ---- Articles récents ----
+  const recentArts = articles.slice(0, 4);
+  document.getElementById('recentArticles').innerHTML = recentArts.map(a => `
+    <div style="background:white;padding:0.9rem 1.1rem;border-radius:5px;margin-bottom:0.7rem;box-shadow:0 1px 5px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:0.9rem;font-weight:600">${escapeHtml(a.titre.substring(0, 45))}${a.titre.length > 45 ? '...' : ''}</div>
+        <div style="font-size:0.78rem;color:var(--gris)">${formatDateShort(a.date_publication)}</div>
+      </div>
+      <span class="status-badge status-${a.statut}">${a.statut === 'publie' ? 'Publié' : 'Brouillon'}</span>
+    </div>
+  `).join('') || '<div class="empty-state">Aucun article.</div>';
+
+  // ---- Commentaires en attente ----
+  document.getElementById('pendingComments').innerHTML = comsPending.slice(0, 4).map(c => `
+    <div style="background:white;padding:0.9rem 1.1rem;border-radius:5px;margin-bottom:0.7rem;box-shadow:0 1px 5px rgba(0,0,0,0.05)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem">
+        <span style="font-weight:600;font-size:0.88rem">👤 ${escapeHtml(c.pseudo)}</span>
+        <span style="font-size:0.75rem;color:var(--gris)">${formatDateShort(c.date_commentaire)}</span>
+      </div>
+      <div style="font-size:0.85rem;color:#444">${escapeHtml(c.contenu.substring(0, 80))}...</div>
+      <div style="margin-top:0.5rem;display:flex;gap:0.5rem">
+        <button class="btn btn-success btn-sm" onclick="approuver(${c.id})">✓ Approuver</button>
+        <button class="btn btn-danger btn-sm" onclick="supprimer(${c.id})">✗ Supprimer</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">Aucun commentaire en attente. 🎉</div>';
+
+  function approuver(id) {
+    DB.approuverCommentaire(id);
+    showNotification('Commentaire approuvé !');
+    location.reload();
+  }
+
+  function supprimer(id) {
+    if (confirm('Supprimer ce commentaire ?')) {
+      DB.supprimerCommentaire(id);
+      showNotification('Commentaire supprimé.', 'error');
+      location.reload();
+    }
+  }
+</script>
+</body>
+</html>

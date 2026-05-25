@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MinimalBlog — Accueil</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="logo">Minimal<span>Blog</span></a>
+  <nav>
+    <a href="index.html">Accueil</a>
+    <a href="index.html">Articles</a>
+    <a href="admin/login.html" class="btn-admin">Admin</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Le Blog de Marie Laurent</h1>
+  <p>Articles sur la technologie, les voyages, la culture et bien plus encore.</p>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher un article...">
+    <button onclick="rechercherArticles()">🔍</button>
+  </div>
+</div>
+
+<!-- CONTENU -->
+<div class="container">
+  <div class="categories-filter" id="categoriesFilter">
+    <button class="cat-btn active" onclick="filtrerCategorie(null, this)">Tous</button>
+  </div>
+
+  <div id="articlesGrid" class="articles-grid">
+    <!-- Articles générés dynamiquement -->
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA</p>
+</footer>
+
+<script src="js/db.js"></script>
+<script>
+  // ---- Variables d'état ----
+  let pageActuelle = 1;
+  const ARTICLES_PAR_PAGE = 6;
+  let categorieActive = null;
+  let rechercheActive = '';
+
+  // ---- Initialisation ----
+  DB.init();
+  chargerCategories();
+  afficherArticles();
+
+  // ---- Charger les catégories ----
+  function chargerCategories() {
+    const cats = DB.getCategories();
+    const filter = document.getElementById('categoriesFilter');
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-btn';
+      btn.textContent = cat.nom;
+      btn.onclick = function() { filtrerCategorie(cat.id, this); };
+      filter.appendChild(btn);
+    });
+  }
+
+  // ---- Filtrer par catégorie ----
+  function filtrerCategorie(id, btn) {
+    categorieActive = id;
+    pageActuelle = 1;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    afficherArticles();
+  }
+
+  // ---- Recherche ----
+  function rechercherArticles() {
+    rechercheActive = document.getElementById('searchInput').value.trim();
+    pageActuelle = 1;
+    afficherArticles();
+  }
+
+  document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') rechercherArticles();
+    if (this.value === '') { rechercheActive = ''; afficherArticles(); }
+  });
+
+  // ---- Afficher les articles ----
+  function afficherArticles() {
+    const articles = DB.getArticles('publie', categorieActive, rechercheActive || null);
+    const total = articles.length;
+    const totalPages = Math.ceil(total / ARTICLES_PAR_PAGE);
+    const debut = (pageActuelle - 1) * ARTICLES_PAR_PAGE;
+    const page = articles.slice(debut, debut + ARTICLES_PAR_PAGE);
+
+    const grid = document.getElementById('articlesGrid');
+
+    if (page.length === 0) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">😕 Aucun article trouvé.</div>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = page.map(art => {
+      const cat = DB.getCategorieById(art.categorie_id);
+      const coms = DB.getCommentaires(art.id, true);
+      const extrait = art.contenu.replace(/\n/g, ' ').substring(0, 150) + '...';
+      return `
+        <div class="card" onclick="window.location='article.html?id=${art.id}'">
+          <div class="card-img">
+            ${art.image_principale
+              ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}" onerror="this.parentElement.innerHTML='${art.emoji || '📝'}';">`
+              : `<span style="font-size:3.5rem">${art.emoji || '📝'}</span>`
+            }
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="badge">${cat ? escapeHtml(cat.nom) : 'Divers'}</span>
+              <span class="card-date">📅 ${formatDate(art.date_publication)}</span>
+            </div>
+            <h2>${escapeHtml(art.titre)}</h2>
+            <p>${escapeHtml(extrait)}</p>
+          </div>
+          <div class="card-footer">
+            <span>✍️ ${escapeHtml(art.auteur)}</span>
+            <span>💬 ${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
+            <span class="read-more">Lire →</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Pagination
+    afficherPagination(totalPages);
+  }
+
+  function afficherPagination(totalPages) {
+    const div = document.getElementById('pagination');
+    if (totalPages <= 1) { div.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button class="page-btn ${i === pageActuelle ? 'active' : ''}" onclick="changerPage(${i})">${i}</button>`;
+    }
+    div.innerHTML = html;
+  }
+
+  function changerPage(n) {
+    pageActuelle = n;
+    afficherArticles();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

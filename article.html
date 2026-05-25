@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MinimalBlog — Article</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Minimal<span>Blog</span></a>
+  <nav>
+    <a href="index.html">← Retour</a>
+    <a href="admin/login.html" class="btn-admin">Admin</a>
+  </nav>
+</header>
+
+<div class="article-detail">
+  <div id="articleContent">
+    <!-- Chargé dynamiquement -->
+  </div>
+
+  <div class="comments-section" id="commentsSection" style="display:none">
+    <h3>Commentaires</h3>
+
+    <!-- Formulaire ajout commentaire -->
+    <div class="comment-form">
+      <h4>Laisser un commentaire</h4>
+      <div id="successMsg" class="success-msg">✅ Votre commentaire a été soumis et est en attente de modération. Merci !</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pseudo *</label>
+          <input type="text" id="pseudo" placeholder="Votre pseudo" maxlength="50">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="votre@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Commentaire *</label>
+        <textarea id="contenu" placeholder="Écrivez votre commentaire..." rows="4"></textarea>
+      </div>
+      <button class="btn btn-accent" onclick="soumettreCommentaire()">Publier le commentaire</button>
+    </div>
+
+    <!-- Liste commentaires approuvés -->
+    <div id="commentsList"></div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA</p>
+</footer>
+
+<script src="js/db.js"></script>
+<script>
+  DB.init();
+
+  // Lire l'ID depuis l'URL
+  const params = new URLSearchParams(window.location.search);
+  const articleId = params.get('id');
+
+  if (!articleId) {
+    window.location.href = 'index.html';
+  }
+
+  const article = DB.getArticleById(articleId);
+
+  if (!article || article.statut !== 'publie') {
+    document.getElementById('articleContent').innerHTML = `
+      <div class="empty-state">
+        <p style="font-size:3rem">😕</p>
+        <p>Article introuvable ou non publié.</p>
+        <a href="index.html" class="btn btn-primary mt-1">Retour à l'accueil</a>
+      </div>`;
+  } else {
+    // Mettre à jour le titre de la page
+    document.title = `MinimalBlog — ${article.titre}`;
+
+    const cat = DB.getCategorieById(article.categorie_id);
+    const coms = DB.getCommentaires(article.id, true);
+
+    // Afficher l'article
+    document.getElementById('articleContent').innerHTML = `
+      <div class="article-header">
+        <div style="margin-bottom:1rem">
+          <span class="badge">${cat ? escapeHtml(cat.nom) : 'Divers'}</span>
+        </div>
+        <h1>${escapeHtml(article.titre)}</h1>
+        <div class="article-info">
+          <span>✍️ ${escapeHtml(article.auteur)}</span>
+          <span>📅 ${formatDate(article.date_publication)}</span>
+          <span>💬 ${coms.length} commentaire${coms.length !== 1 ? 's' : ''} approuvé${coms.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div class="article-img">
+        ${article.image_principale
+          ? `<img src="${escapeHtml(article.image_principale)}" alt="${escapeHtml(article.titre)}" onerror="this.parentElement.innerHTML='<span style=font-size:5rem>${article.emoji || '📝'}</span>'">`
+          : `<span style="font-size:5rem">${article.emoji || '📝'}</span>`
+        }
+      </div>
+      <div class="article-content">
+        ${article.contenu.split('\n').filter(p => p.trim()).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      </div>
+    `;
+
+    // Afficher section commentaires
+    document.getElementById('commentsSection').style.display = 'block';
+    afficherCommentaires();
+  }
+
+  function afficherCommentaires() {
+    const coms = DB.getCommentaires(articleId, true);
+    const div = document.getElementById('commentsList');
+    if (coms.length === 0) {
+      div.innerHTML = '<p style="color:var(--gris);font-size:0.95rem">Aucun commentaire approuvé pour l\'instant. Soyez le premier !</p>';
+      return;
+    }
+    div.innerHTML = coms.map(c => `
+      <div class="comment-item">
+        <span class="comment-author">👤 ${escapeHtml(c.pseudo)}</span>
+        <span class="comment-date">${formatDate(c.date_commentaire)}</span>
+        <div class="comment-text">${escapeHtml(c.contenu)}</div>
+      </div>
+    `).join('');
+  }
+
+  function soumettreCommentaire() {
+    const pseudo = document.getElementById('pseudo').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const contenu = document.getElementById('contenu').value.trim();
+
+    if (!pseudo) { alert('Le pseudo est obligatoire.'); return; }
+    if (!contenu) { alert('Le commentaire est vide.'); return; }
+
+    DB.addCommentaire({ article_id: parseInt(articleId), pseudo, email, contenu });
+
+    // Reset form
+    document.getElementById('pseudo').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('contenu').value = '';
+
+    const msg = document.getElementById('successMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 5000);
+  }
+</script>
+</body>
+</html>
