@@ -6,18 +6,29 @@
   <title>MinimalBlog — Article</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* ---- Styles propres à la page article ---- */
+    /* ═══ HERO ARTICLE ═══ */
     .article-hero {
       background:var(--navy-900);
-      padding:7rem 2rem 4rem;
+      padding:8rem 2rem 5rem;
       text-align:center; position:relative; overflow:hidden;
     }
-    .article-hero::before {
-      content:''; position:absolute; inset:0;
-      background:radial-gradient(ellipse 80% 60% at 50% 80%, rgba(192,148,80,.07) 0%, transparent 60%);
+
+    /* Fond flouté = image de l'article */
+    .article-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background-size:cover; background-position:center;
+      filter:blur(28px) brightness(0.17) saturate(0.5);
+      transform:scale(1.12);
     }
+
+    /* Vignette dorée basse */
+    .article-hero::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:180px; z-index:1;
+      background:linear-gradient(to top, var(--navy-900) 0%, transparent 100%);
+    }
+
     .article-hero-inner {
-      position:relative; z-index:1; max-width:760px; margin:0 auto;
+      position:relative; z-index:2; max-width:760px; margin:0 auto;
     }
     .article-hero-eyebrow {
       font-family:'Lato', sans-serif; font-size:.68rem; font-weight:700;
@@ -29,69 +40,110 @@
 
     .article-hero h1 {
       font-family:'Cormorant Garamond', serif;
-      font-size:clamp(2.2rem, 5.5vw, 3.8rem);
-      font-weight:300; line-height:1.18;
+      font-size:clamp(2.4rem, 5.5vw, 4rem);
+      font-weight:300; line-height:1.15;
       color:var(--cream); margin-bottom:1.8rem;
+      text-shadow:0 2px 30px rgba(0,0,0,.4);
     }
     .article-hero h1 em { font-style:italic; color:var(--gold-300); }
 
     .article-hero-meta {
       display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;
-      font-size:.75rem; color:rgba(245,238,221,.45);
+      font-size:.75rem; color:rgba(245,238,221,.5);
       font-family:'Lato', sans-serif; letter-spacing:.5px;
     }
     .article-hero-meta span { display:flex; align-items:center; gap:.4rem; }
-    .article-hero-meta .badge {
-      border-color:rgba(192,148,80,.5); color:var(--gold-300);
-    }
+    .article-hero-meta .badge { border-color:rgba(192,148,80,.5); color:var(--gold-300); }
 
-    /* ---- Contenu ---- */
+    /* ═══ WRAPPER ═══ */
     .article-wrapper { max-width:760px; margin:3.5rem auto 0; padding:0 2rem; }
 
+    /* ═══ IMAGE PLEINE LARGEUR (couverture) ═══ */
     .article-image-full {
-      width:100%; height:440px; overflow:hidden;
-      margin:0; display:block;
-      background:var(--beige-50);
+      width:100%; height:460px; overflow:hidden;
+      margin:0; display:block; background:var(--beige-50); position:relative;
     }
     .article-image-full img {
       width:100%; height:100%; object-fit:cover;
-      transition:transform .8s ease;
+      transition:transform 1s cubic-bezier(.22,1,.36,1);
     }
-    .article-image-full:hover img { transform:scale(1.03); }
+    .article-image-full:hover img { transform:scale(1.04); }
     .article-image-full .emoji-placeholder {
-      width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
       font-size:6rem; background:linear-gradient(160deg, var(--beige-50), var(--beige-100));
     }
 
+    /* ═══ CORPS ARTICLE ═══ */
     .article-body {
       padding:3.5rem 0 2rem;
       font-family:'EB Garamond', Georgia, serif;
-      font-size:1.18rem; line-height:2; color:var(--ink-600);
+      font-size:1.2rem; line-height:2.05; color:var(--ink-600);
     }
-    .article-body p { margin-bottom:1.5rem; }
+    .article-body p { margin-bottom:1.6rem; }
     .article-body p:first-child::first-letter {
       font-family:'Cormorant Garamond', serif;
-      font-size:4.5rem; font-weight:600;
-      float:left; line-height:.75; margin:0 .12em 0 0;
+      font-size:5rem; font-weight:600;
+      float:left; line-height:.75; margin:.08em .12em 0 0;
       color:var(--navy-700);
     }
 
-    /* Séparateur fin */
+    /* ═══ FIGURES INLINE ═══ */
+    .article-figure {
+      margin:3rem -2.5rem;
+      overflow:hidden; position:relative;
+    }
+    .article-figure img {
+      width:100%; height:420px; object-fit:cover; display:block;
+      transition:transform 1s cubic-bezier(.22,1,.36,1);
+      opacity:0; transform:scale(1.04);
+      transition:opacity .8s ease, transform 1s cubic-bezier(.22,1,.36,1);
+    }
+    .article-figure.revealed img { opacity:1; transform:scale(1); }
+    .article-figure:hover img { transform:scale(1.03); }
+    .article-figure figcaption {
+      text-align:center; font-size:.78rem; color:var(--ink-400);
+      font-family:'Lato', sans-serif; font-style:italic;
+      padding:.6rem 2rem .2rem; letter-spacing:.3px; line-height:1.5;
+    }
+    @media (max-width:860px) { .article-figure { margin:2.5rem -1.5rem; } }
+    @media (max-width:640px) { .article-figure { margin:2rem -1.2rem; }
+      .article-figure img { height:240px; } }
+
+    /* ═══ ARTICLES SIMILAIRES ═══ */
+    .similaires-section { margin:3rem 0 1rem; }
+    .similaires-titre {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.9rem; font-weight:400; color:var(--navy-800); margin-bottom:1.5rem;
+    }
+    .similaires-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    @media(max-width:640px) { .similaires-grid { grid-template-columns:1fr; } }
+    .similaire-card {
+      cursor:pointer; overflow:hidden; border:1px solid var(--beige-100);
+      border-radius:var(--radius); transition:all var(--transition);
+      background:var(--white);
+    }
+    .similaire-card:hover { box-shadow:var(--shadow-md); transform:translateY(-4px); border-color:var(--beige-200); }
+    .similaire-img { height:140px; overflow:hidden; background:var(--beige-50); display:flex; align-items:center; justify-content:center; font-size:2.2rem; }
+    .similaire-img img { width:100%; height:100%; object-fit:cover; transition:transform .5s cubic-bezier(.22,1,.36,1); }
+    .similaire-card:hover .similaire-img img { transform:scale(1.07); }
+    .similaire-body { padding:1rem 1.1rem 1.2rem; }
+    .similaire-body h4 { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:500; color:var(--navy-800); margin-bottom:.4rem; line-height:1.35; }
+    .similaire-body p { font-size:.8rem; color:var(--ink-400); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+    /* ═══ SÉPARATEUR ═══ */
     .article-divider {
       display:flex; align-items:center; gap:1rem;
-      margin:2rem 0; color:var(--gold-500);
+      margin:2.5rem 0; color:var(--gold-500);
     }
     .article-divider span { flex:1; height:1px; background:var(--beige-200); }
     .article-divider em { font-size:1rem; }
 
-    /* back-link */
+    /* ═══ BACK LINK ═══ */
     .back-link {
       display:inline-flex; align-items:center; gap:.5rem;
       font-size:.72rem; font-weight:700; letter-spacing:1.5px;
       text-transform:uppercase; color:var(--gold-500);
-      margin:3rem 0 1rem;
-      transition:gap .25s;
+      margin:3rem 0 1rem; transition:gap .25s, color .25s;
     }
     .back-link:hover { gap:.9rem; color:var(--gold-600); }
   </style>
@@ -114,6 +166,7 @@
 
 <!-- HERO ARTICLE (rempli par JS) -->
 <div id="articleHero" class="article-hero" style="display:none">
+  <div id="articleHeroBg" class="article-hero-bg" style="display:none"></div>
   <div class="article-hero-inner" id="articleHeroInner"></div>
 </div>
 
@@ -125,6 +178,9 @@
   <div id="articleContent">
     <div class="empty-state">⏳ Chargement…</div>
   </div>
+
+  <!-- ARTICLES SIMILAIRES -->
+  <div id="articlesSimilaires"></div>
 
   <!-- COMMENTAIRES -->
   <div class="comments-section" id="commentsSection" style="display:none">
@@ -207,8 +263,20 @@
     const cat  = DB.getCategorieById(article.categorie_id);
     const coms = DB.getCommentaires(article.id, true);
 
-    /* -- Hero -- */
-    document.getElementById('articleHero').style.display = 'block';
+    /* -- Temps de lecture -- */
+    const mots = article.contenu.split(/\s+/).length;
+    const minutes = Math.max(1, Math.round(mots / 220));
+
+    /* -- Hero avec fond flouté -- */
+    const heroEl = document.getElementById('articleHero');
+    heroEl.style.display = 'block';
+
+    if (article.image_principale) {
+      const bgEl = document.getElementById('articleHeroBg');
+      bgEl.style.backgroundImage = `url(${article.image_principale})`;
+      bgEl.style.display = 'block';
+    }
+
     document.getElementById('articleHeroInner').innerHTML = `
       <div class="article-hero-eyebrow">
         <span></span>
@@ -219,29 +287,93 @@
       <div class="article-hero-meta">
         <span>✍&thinsp;${escapeHtml(article.auteur)}</span>
         <span>◈&thinsp;${formatDate(article.date_publication)}</span>
+        <span>◎&thinsp;${minutes} min de lecture</span>
         <span>◇&thinsp;${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
       </div>`;
 
-    /* -- Image pleine largeur -- */
+    /* -- Image couverture pleine largeur -- */
     const imgEl = document.getElementById('articleImageFull');
     imgEl.style.display = 'block';
     if (article.image_principale) {
       imgEl.innerHTML = `<img src="${escapeHtml(article.image_principale)}"
                               alt="${escapeHtml(article.titre)}"
+                              loading="eager"
                               onerror="this.parentElement.innerHTML='<div class=emoji-placeholder>${article.emoji || '📝'}</div>'">`;
     } else {
       imgEl.innerHTML = `<div class="emoji-placeholder">${article.emoji || '📝'}</div>`;
     }
 
-    /* -- Corps -- */
-    document.getElementById('articleContent').innerHTML = `
-      <div class="article-body">
-        ${article.contenu.split('\n').filter(p => p.trim()).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-      </div>`;
+    /* -- Corps avec photos inline -- */
+    const paras  = article.contenu.split('\n').filter(p => p.trim());
+    const imgMap = {};
+    (article.images || []).forEach(img => { imgMap[img.apres_para] = img; });
+
+    let bodyHtml = '';
+    paras.forEach((para, idx) => {
+      bodyHtml += `<p>${escapeHtml(para)}</p>`;
+      if (imgMap[idx]) {
+        const fig = imgMap[idx];
+        bodyHtml += `
+          <figure class="article-figure reveal-figure">
+            <img src="${escapeHtml(fig.url)}"
+                 alt="${escapeHtml(fig.caption || '')}"
+                 loading="lazy"
+                 onerror="this.closest('.article-figure').style.display='none'">
+            ${fig.caption ? `<figcaption>${escapeHtml(fig.caption)}</figcaption>` : ''}
+          </figure>`;
+      }
+    });
+
+    document.getElementById('articleContent').innerHTML =
+      `<div class="article-body">${bodyHtml}</div>`;
+
+    /* -- Reveal des figures au scroll -- */
+    const ioFig = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('revealed'); ioFig.unobserve(e.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.reveal-figure').forEach(el => ioFig.observe(el));
+
+    /* -- Articles similaires -- */
+    afficherSimilaires(article);
 
     /* -- Commentaires -- */
     document.getElementById('commentsSection').style.display = 'block';
     afficherCommentaires();
+  }
+
+  /* ---- Articles similaires ---- */
+  function afficherSimilaires(article) {
+    const similaires = DB.getArticles('publie', article.categorie_id)
+      .filter(a => a.id !== article.id)
+      .slice(0, 3);
+    if (!similaires.length) return;
+
+    document.getElementById('articlesSimilaires').innerHTML = `
+      <div class="similaires-section">
+        <div class="article-divider"><span></span><em>◆</em><span></span></div>
+        <h3 class="similaires-titre">Dans la même catégorie</h3>
+        <div class="similaires-grid">
+          ${similaires.map(art => {
+            const premierPara = art.contenu.split('\n').filter(p => p.trim())[0] || '';
+            const extrait = premierPara.substring(0, 110) + '…';
+            return `
+            <div class="similaire-card" onclick="window.location='article.html?id=${art.id}'">
+              <div class="similaire-img">
+                ${art.image_principale
+                  ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}" loading="lazy"
+                         onerror="this.parentElement.innerHTML='<span>${art.emoji||'📝'}</span>'">`
+                  : `<span>${art.emoji || '📝'}</span>`}
+              </div>
+              <div class="similaire-body">
+                <h4>${escapeHtml(art.titre)}</h4>
+                <p>${escapeHtml(extrait)}</p>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
   }
 
   /* ---- Commentaires ---- */

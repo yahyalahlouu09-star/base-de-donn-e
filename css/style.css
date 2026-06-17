@@ -1001,3 +1001,20 @@ footer strong { color:var(--cream); }
   .container  { padding:0 1.2rem; }
   .categories-filter { padding:0 1.2rem; }
 }
+
+/* ----------------------------------------------------------------
+   LECTURE TIME BADGE (index cards)
+   ---------------------------------------------------------------- */
+.card-read-time {
+  display:inline-flex; align-items:center; gap:.3rem;
+  font-size:.68rem; color:var(--ink-400); letter-spacing:.3px;
+  font-family:'Lato', sans-serif;
+}
+
+/* ----------------------------------------------------------------
+   FEATURED CARD first-child — responsive fix
+   ---------------------------------------------------------------- */
+@media (max-width:640px) {
+  .articles-grid .card:first-child .card-img { height:220px; }
+  .articles-grid .card:first-child .card h2  { font-size:1.45rem; }
+}

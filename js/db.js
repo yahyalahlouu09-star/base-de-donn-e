@@ -6,7 +6,7 @@ const DB = {
 
   // ---- Initialisation des données de démo ----
   init() {
-    const CURRENT_VERSION = 'v5';
+    const CURRENT_VERSION = 'v6';
     if (localStorage.getItem('mb_data_version') !== CURRENT_VERSION) {
       localStorage.removeItem('mb_initialized');
       localStorage.removeItem('mb_initialized_v2');
@@ -219,6 +219,69 @@ const DB = {
         emoji: '🕌'
       }
     ];
+    // Photos inline : 2 images placées entre les paragraphes de chaque article
+    const articleImages = {
+      1: [
+        { url: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: "Les intelligences artificielles s'invitent dans tous les secteurs professionnels", apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Code, données et algorithmes — les fondations invisibles de l\'IA moderne', apres_para: 3 }
+      ],
+      2: [
+        { url: 'https://images.pexels.com/photos/402028/pexels-photo-402028.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Fushimi Inari — les dix mille torii vermillon serpentent jusqu\'au sommet de la colline', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/248195/pexels-photo-248195.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Hanami — contempler la floraison éphémère des cerisiers, rituel immuable du printemps japonais', apres_para: 3 }
+      ],
+      3: [
+        { url: 'https://images.pexels.com/photos/1624438/pexels-photo-1624438.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Épices marocaines — safran, cumin, ras el-hanout : un voyage aromatique millénaire', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/725997/pexels-photo-725997.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le tajine au citron confit et olives — philosophie de la cuisson lente et de la patience', apres_para: 3 }
+      ],
+      4: [
+        { url: 'https://images.pexels.com/photos/355935/pexels-photo-355935.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Perseverance explore le cratère Jezero depuis 2021 — un lac martien disparu il y a 3,5 milliards d\'années', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/41951/pexels-photo-41951.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'L\'immensité du cosmos — Mars n\'est qu\'un premier pas vers les étoiles', apres_para: 3 }
+      ],
+      5: [
+        { url: 'https://images.pexels.com/photos/164745/pexels-photo-164745.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le saxophone ténor — voix de velours et de mélancolie du jazz depuis Coltrane', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/995301/pexels-photo-995301.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le jazz se vit debout, dans le frisson brûlant du concert en direct', apres_para: 3 }
+      ],
+      6: [
+        { url: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Python et JavaScript : deux philosophies du développement, deux mondes complémentaires', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le terminal — espace de liberté et de puissance du développeur moderne', apres_para: 3 }
+      ],
+      7: [
+        { url: 'https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'La blockchain encode la confiance dans un registre partagé sans autorité centrale', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/3785587/pexels-photo-3785587.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Les smart contracts exécutent des accords automatiquement, sans intermédiaire humain', apres_para: 3 }
+      ],
+      8: [
+        { url: 'https://images.pexels.com/photos/1127119/pexels-photo-1127119.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Les souks de Marrakech — labyrinthe de senteurs, de couleurs et de traditions séculaires', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/2549581/pexels-photo-2549581.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Un riad traditionnel : paradis de silence et de verdure caché derrière des murs austères', apres_para: 3 }
+      ],
+      9: [
+        { url: 'https://images.pexels.com/photos/3408354/pexels-photo-3408354.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Nigiri sushi — la perfection atteinte dans la simplicité absolue du geste', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/2133989/pexels-photo-2133989.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'L\'omakase : se remettre entièrement au jugement du chef pour un voyage unique', apres_para: 3 }
+      ],
+      10: [
+        { url: 'https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le laboratoire moderne — nouveau temple où se réécrit le code du vivant', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/3825579/pexels-photo-3825579.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'CRISPR-Cas9 : des ciseaux moléculaires guidés par un ARN de vingt lettres génétiques', apres_para: 3 }
+      ],
+      11: [
+        { url: 'https://images.pexels.com/photos/3040525/pexels-photo-3040525.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Caméra portée à l\'épaule, lumière naturelle — la signature visuelle de la Nouvelle Vague', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Paris, décor naturel et personnage à part entière de la révolution cinématographique', apres_para: 3 }
+      ],
+      12: [
+        { url: 'https://images.pexels.com/photos/4388164/pexels-photo-4388164.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Géométrie sacrée — les arabesques incarnent l\'infini divin par la répétition mathématique', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/3680094/pexels-photo-3680094.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'La lumière filtrée par les moucharabiehs transforme l\'espace en expérience transcendante', apres_para: 3 }
+      ],
+      13: [
+        { url: 'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Le tram 28 gravit les ruelles pavées de l\'Alfama depuis plus d\'un siècle', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/3354416/pexels-photo-3354416.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'Pastéis de nata — crème vanillée, pâte feuilletée craquante : l\'âme dorée du Portugal', apres_para: 3 }
+      ],
+      14: [
+        { url: 'https://images.pexels.com/photos/1341279/pexels-photo-1341279.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'La Voie Lactée — notre galaxie de 200 milliards d\'étoiles, vue de l\'intérieur', apres_para: 1 },
+        { url: 'https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg?auto=compress&cs=tinysrgb&w=1200', caption: 'L\'Event Horizon Telescope — un réseau de huit radiotélescopes couvrant toute la planète', apres_para: 3 }
+      ]
+    };
+    articles.forEach(art => {
+      if (articleImages[art.id]) art.images = articleImages[art.id];
+    });
+
     localStorage.setItem('mb_articles', JSON.stringify(articles));
   },
 

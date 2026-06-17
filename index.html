@@ -170,15 +170,16 @@
     }
 
     grid.innerHTML = page.map((art, idx) => {
-      const cat     = DB.getCategorieById(art.categorie_id);
-      const coms    = DB.getCommentaires(art.id, true);
-      const extrait = art.contenu.replace(/\n/g, ' ').substring(0, 160) + '…';
+      const cat      = DB.getCategorieById(art.categorie_id);
+      const coms     = DB.getCommentaires(art.id, true);
+      const extrait  = art.contenu.replace(/\n/g, ' ').substring(0, 160) + '…';
+      const minutes  = Math.max(1, Math.round(art.contenu.split(/\s+/).length / 220));
       return `
         <article class="card" onclick="window.location='article.html?id=${art.id}'"
                  style="transition-delay:${(idx % 3) * 0.1}s">
           <div class="card-img">
             ${art.image_principale
-              ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}"
+              ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}" loading="lazy"
                      onerror="this.parentElement.innerHTML='<span style=font-size:3.5rem>${art.emoji || '📝'}</span>'">`
               : `<span style="font-size:3.5rem">${art.emoji || '📝'}</span>`}
           </div>
@@ -192,8 +193,9 @@
           </div>
           <div class="card-footer">
             <span>✍&thinsp;${escapeHtml(art.auteur)}</span>
+            <span class="card-read-time">◎&thinsp;${minutes} min</span>
             <span>◇&thinsp;${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
-            <span class="read-more">Lire l'article →</span>
+            <span class="read-more">Lire →</span>
           </div>
         </article>`;
     }).join('');
