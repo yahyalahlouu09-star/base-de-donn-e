@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Commentaires</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Minimal<span>Blog</span></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html">    <span class="icon">📊</span> Tableau de bord</a></li>
+      <li><a href="articles.html">     <span class="icon">📝</span> Articles</a></li>
+      <li><a href="commentaires.html" class="active"><span class="icon">💬</span> Commentaires</a></li>
+      <li><a href="../index.html" target="_blank"><span class="icon">🌐</span> Voir le blog</a></li>
+      <li style="margin-top:2rem">
+        <a href="#" onclick="seDeconnecter()"><span class="icon">🚪</span> Déconnexion</a>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h2>Modération des Commentaires</h2>
+      <div id="badgePending"></div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- Onglets filtre -->
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--glass-bd);border-radius:12px;overflow:hidden;width:fit-content;backdrop-filter:blur(10px)">
+        <button id="tabPending"  onclick="filtrer('pending')"
+          class="tab-btn tab-active">⏳ En attente</button>
+        <button id="tabApproved" onclick="filtrer('approved')"
+          class="tab-btn">✅ Approuvés</button>
+        <button id="tabAll"      onclick="filtrer('all')"
+          class="tab-btn">📋 Tous</button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Article</th>
+            <th>Pseudo</th>
+            <th>Email</th>
+            <th>Commentaire</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="comsTbody">
+          <tr><td colspan="8" class="empty-state">⏳ Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+.tab-btn {
+  padding:.6rem 1.4rem; border:none; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; font-size:.88rem; font-weight:500;
+  background:var(--glass-bg); color:var(--gris); transition:all .25s;
+}
+.tab-btn.tab-active {
+  background:linear-gradient(135deg,#7c3aed,#5b21b6);
+  color:var(--blanc); font-weight:600;
+}
+.tab-btn:hover:not(.tab-active) { background:rgba(124,58,237,.12); color:var(--blanc); }
+</style>
+
+<script>const API_BASE = '../../backend/api';</script>
+<script src="../assets/js/utils.js"></script>
+<script>
+  let filtreActif = 'pending';
+  let tousLesComs = [];
+
+  // ---- Init ----
+  (async () => {
+    try { await API.get('auth.php'); }
+    catch { location.href = 'login.html'; return; }
+    await chargerCommentaires();
+  })();
+
+  async function seDeconnecter() {
+    try { await API.delete('auth.php'); } catch {}
+    location.href = 'login.html';
+  }
+
+  // ---- Charger depuis l'API ----
+  async function chargerCommentaires() {
+    try {
+      tousLesComs = await API.get('commentaires.php', { admin: 1 });
+      mettreAJourBadge();
+      afficherFiltres();
+    } catch (e) {
+      document.getElementById('comsTbody').innerHTML =
+        `<tr><td colspan="8" class="empty-state">❌ ${escHtml(e.message)}</td></tr>`;
+    }
+  }
+
+  function mettreAJourBadge() {
+    const nb  = tousLesComs.filter(c => !c.approuve).length;
+    const el  = document.getElementById('badgePending');
+    el.textContent = nb > 0 ? `${nb} en attente` : 'Aucun en attente';
+    el.style.cssText = `padding:.28rem .9rem;border-radius:50px;font-size:.82rem;font-weight:600;` +
+      (nb > 0
+        ? 'background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(220,38,38,.3)'
+        : 'background:rgba(5,150,105,.2);color:#34d399;border:1px solid rgba(5,150,105,.3)');
+  }
+
+  // ---- Afficher selon filtre ----
+  function filtrer(f) {
+    filtreActif = f;
+    ['tabPending','tabApproved','tabAll'].forEach(id => {
+      document.getElementById(id).classList.remove('tab-active');
+    });
+    const map = { pending:'tabPending', approved:'tabApproved', all:'tabAll' };
+    document.getElementById(map[f]).classList.add('tab-active');
+    afficherFiltres();
+  }
+
+  function afficherFiltres() {
+    let coms;
+    if (filtreActif === 'pending')  coms = tousLesComs.filter(c => !c.approuve);
+    else if (filtreActif === 'approved') coms = tousLesComs.filter(c =>  c.approuve);
+    else coms = tousLesComs;
+
+    const tbody = document.getElementById('comsTbody');
+    if (!coms.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Aucun commentaire.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = coms.map(c => `
+      <tr>
+        <td><strong>${c.id}</strong></td>
+        <td style="max-width:140px;font-size:.82rem">
+          ${c.article_titre
+            ? `<a href="../article.html?id=${c.article_id}" target="_blank"
+                  style="color:#a78bfa">${escHtml(c.article_titre.substring(0, 38))}…</a>`
+            : '—'}
+        </td>
+        <td><strong style="color:#c4b5fd">${escHtml(c.pseudo)}</strong></td>
+        <td style="font-size:.8rem;color:var(--gris)">${escHtml(c.email || '—')}</td>
+        <td style="max-width:200px;font-size:.85rem;color:rgba(220,220,255,.7)">
+          ${escHtml(c.contenu.substring(0, 80))}${c.contenu.length > 80 ? '…' : ''}
+        </td>
+        <td style="font-size:.78rem;font-family:'JetBrains Mono',monospace">${formatDateShort(c.date_commentaire)}</td>
+        <td>
+          <span class="status-badge ${c.approuve ? 'status-approved' : 'status-pending'}">
+            ${c.approuve ? '✅ Approuvé' : '⏳ En attente'}
+          </span>
+        </td>
+        <td>
+          <div class="actions">
+            ${!c.approuve
+              ? `<button class="btn btn-success btn-sm" onclick="approuver(${c.id}, this)">✓ Approuver</button>`
+              : ''}
+            <button class="btn btn-danger btn-sm" onclick="supprimer(${c.id}, this)">🗑 Supprimer</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  // ---- Actions ----
+  async function approuver(id, btn) {
+    btn.disabled = true;
+    try {
+      await API.put(`commentaires.php?id=${id}`, { approuve: true });
+      showNotification('✅ Commentaire approuvé !');
+      await chargerCommentaires();
+    } catch (e) { showNotification(e.message, 'error'); btn.disabled = false; }
+  }
+
+  async function supprimer(id, btn) {
+    if (!confirm('Supprimer définitivement ce commentaire ?')) return;
+    btn.disabled = true;
+    try {
+      await API.delete(`commentaires.php?id=${id}`);
+      showNotification('🗑 Commentaire supprimé.', 'error');
+      await chargerCommentaires();
+    } catch (e) { showNotification(e.message, 'error'); btn.disabled = false; }
+  }
+</script>
+</body>
+</html>

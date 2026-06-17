@@ -260,10 +260,16 @@ function showNotification(msg, type = 'success') {
   div.className = 'notification';
   div.style.cssText = `
     position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
-    background:${type === 'success' ? '#28a745' : '#dc3545'};
-    color:#fff; padding:0.8rem 1.4rem; border-radius:5px;
-    font-family:'Source Sans 3',sans-serif; font-size:0.95rem;
-    box-shadow:0 4px 20px rgba(0,0,0,0.2); animation: slideIn 0.3s ease;
+    background:${type === 'success'
+      ? 'linear-gradient(135deg,#27ae60,#1e8449)'
+      : 'linear-gradient(135deg,#c0392b,#a93226)'};
+    color:#fff; padding:.85rem 1.5rem; border-radius:3px;
+    font-family:'Lato',sans-serif; font-size:.88rem; font-weight:700;
+    letter-spacing:.5px;
+    box-shadow:0 8px 30px rgba(9,23,40,.25);
+    border-left:3px solid ${type === 'success' ? '#f0d88a' : '#f5c5c8'};
+    animation:mbNotifIn .3s cubic-bezier(.22,1,.36,1);
+    max-width:320px;
   `;
   div.textContent = msg;
   document.body.appendChild(div);

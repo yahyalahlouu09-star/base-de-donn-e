@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MinimalBlog — Article</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Minimal<span>Blog</span></a>
+  <nav>
+    <a href="index.html">← Retour</a>
+    <a href="admin/login.html" class="btn-admin">Admin</a>
+  </nav>
+</header>
+
+<div class="article-detail">
+  <div id="articleContent">
+    <div class="empty-state">⏳ Chargement de l'article…</div>
+  </div>
+
+  <div class="comments-section" id="commentsSection" style="display:none">
+    <h3>Commentaires</h3>
+
+    <div class="comment-form">
+      <h4>Laisser un commentaire</h4>
+      <div id="successMsg" class="success-msg">
+        ✅ Votre commentaire a été soumis et est en attente de modération. Merci !
+      </div>
+      <div id="errorMsg" class="error-msg"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pseudo *</label>
+          <input type="text" id="pseudo" placeholder="Votre pseudo" maxlength="80">
+        </div>
+        <div class="form-group">
+          <label>Email (optionnel)</label>
+          <input type="email" id="email" placeholder="votre@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Commentaire *</label>
+        <textarea id="contenu" placeholder="Écrivez votre commentaire…" rows="4"></textarea>
+      </div>
+      <button class="btn btn-accent" id="submitBtn" onclick="soumettreCommentaire()">
+        Publier le commentaire
+      </button>
+    </div>
+
+    <div id="commentsList"></div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA</p>
+</footer>
+
+<script>const API_BASE = '../backend/api';</script>
+<script src="assets/js/utils.js"></script>
+<script>
+  const params    = new URLSearchParams(location.search);
+  const articleId = params.get('id');
+  if (!articleId) location.href = 'index.html';
+
+  // ---- Charger article ----
+  (async () => {
+    try {
+      const art = await API.get(`articles.php?id=${articleId}`);
+
+      if (art.statut !== 'publie') throw new Error('non publié');
+
+      document.title = `MinimalBlog — ${art.titre}`;
+
+      document.getElementById('articleContent').innerHTML = `
+        <div class="article-header">
+          <div style="margin-bottom:1rem">
+            <span class="badge">${escHtml(art.categorie_nom || 'Divers')}</span>
+          </div>
+          <h1>${escHtml(art.titre)}</h1>
+          <div class="article-info">
+            <span>✍️ ${escHtml(art.auteur)}</span>
+            <span>📅 ${formatDate(art.date_publication)}</span>
+            <span>💬 ${art.nb_commentaires} commentaire${art.nb_commentaires !== 1 ? 's' : ''} approuvé${art.nb_commentaires !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <div class="article-img">
+          ${art.image_principale
+            ? `<img src="${escHtml(art.image_principale)}" alt="${escHtml(art.titre)}"
+                   onerror="this.parentElement.innerHTML='<span style=font-size:5rem>${art.emoji || '📝'}</span>'">`
+            : `<span style="font-size:5rem">${art.emoji || '📝'}</span>`}
+        </div>
+        <div class="article-content">
+          ${art.contenu.split('\n').filter(p => p.trim())
+            .map(p => `<p>${escHtml(p)}</p>`).join('')}
+        </div>`;
+
+      document.getElementById('commentsSection').style.display = 'block';
+      afficherCommentaires();
+
+    } catch (e) {
+      document.getElementById('articleContent').innerHTML = `
+        <div class="empty-state">
+          <p style="font-size:3rem">😕</p>
+          <p>Article introuvable ou non publié.</p>
+          <a href="index.html" class="btn btn-primary mt-1">Retour à l'accueil</a>
+        </div>`;
+    }
+  })();
+
+  // ---- Charger commentaires ----
+  async function afficherCommentaires() {
+    try {
+      const coms = await API.get('commentaires.php', { article_id: articleId });
+      const div  = document.getElementById('commentsList');
+      if (!coms.length) {
+        div.innerHTML = '<p style="color:var(--gris);font-size:.95rem">Aucun commentaire approuvé pour l\'instant. Soyez le premier !</p>';
+        return;
+      }
+      div.innerHTML = coms.map(c => `
+        <div class="comment-item">
+          <span class="comment-author">👤 ${escHtml(c.pseudo)}</span>
+          <span class="comment-date">${formatDate(c.date_commentaire)}</span>
+          <div class="comment-text">${escHtml(c.contenu)}</div>
+        </div>`).join('');
+    } catch (e) { /* silencieux côté public */ }
+  }
+
+  // ---- Soumettre commentaire ----
+  async function soumettreCommentaire() {
+    const pseudo  = document.getElementById('pseudo').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const contenu = document.getElementById('contenu').value.trim();
+    const errEl   = document.getElementById('errorMsg');
+    const sucEl   = document.getElementById('successMsg');
+
+    errEl.style.display = 'none';
+
+    // Validation côté frontend
+    if (!pseudo)        { errEl.textContent = '⚠ Le pseudo est obligatoire.';       errEl.style.display = 'block'; return; }
+    if (!contenu)       { errEl.textContent = '⚠ Le commentaire est vide.';         errEl.style.display = 'block'; return; }
+    if (contenu.length < 5) { errEl.textContent = '⚠ Commentaire trop court (min 5 car.).'; errEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Envoi…';
+
+    try {
+      await API.post('commentaires.php', {
+        article_id: parseInt(articleId),
+        pseudo, email, contenu
+      });
+
+      document.getElementById('pseudo').value  = '';
+      document.getElementById('email').value   = '';
+      document.getElementById('contenu').value = '';
+
+      sucEl.style.display = 'block';
+      setTimeout(() => sucEl.style.display = 'none', 6000);
+    } catch (e) {
+      errEl.textContent = `❌ ${e.message}`;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Publier le commentaire';
+    }
+  }
+</script>
+</body>
+</html>

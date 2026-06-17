@@ -29,18 +29,18 @@
     <div class="admin-content">
 
       <!-- Onglets -->
-      <div style="display:flex;gap:0;margin-bottom:1.5rem;border:1.5px solid var(--gris-clair);border-radius:5px;overflow:hidden;width:fit-content">
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--beige-200);border-radius:3px;overflow:hidden;width:fit-content">
         <button id="tabPending" onclick="filtrer('pending')"
-          style="padding:0.6rem 1.4rem;border:none;background:var(--noir);color:white;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;font-weight:600">
-          ⏳ En attente
+          style="padding:.6rem 1.4rem;border:none;background:var(--navy-800);color:var(--cream);cursor:pointer;font-family:'Lato',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase">
+          En attente
         </button>
         <button id="tabApproved" onclick="filtrer('approved')"
-          style="padding:0.6rem 1.4rem;border:none;background:white;color:var(--noir);cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem">
-          ✅ Approuvés
+          style="padding:.6rem 1.4rem;border:none;background:var(--white);color:var(--ink-600);cursor:pointer;font-family:'Lato',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase">
+          Approuvés
         </button>
         <button id="tabAll" onclick="filtrer('all')"
-          style="padding:0.6rem 1.4rem;border:none;background:white;color:var(--noir);cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:0.9rem">
-          📋 Tous
+          style="padding:.6rem 1.4rem;border:none;background:var(--white);color:var(--ink-600);cursor:pointer;font-family:'Lato',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase">
+          Tous
         </button>
       </div>
 
@@ -75,13 +75,13 @@
     filtreActif = f;
     // Style des onglets
     ['tabPending', 'tabApproved', 'tabAll'].forEach(id => {
-      document.getElementById(id).style.background = 'white';
-      document.getElementById(id).style.color = 'var(--noir)';
+      document.getElementById(id).style.background = 'var(--white)';
+      document.getElementById(id).style.color = 'var(--ink-600)';
       document.getElementById(id).style.fontWeight = '400';
     });
     const active = f === 'pending' ? 'tabPending' : f === 'approved' ? 'tabApproved' : 'tabAll';
-    document.getElementById(active).style.background = 'var(--noir)';
-    document.getElementById(active).style.color = 'white';
+    document.getElementById(active).style.background = 'var(--navy-800)';
+    document.getElementById(active).style.color = 'var(--cream)';
     document.getElementById(active).style.fontWeight = '600';
     chargerCommentaires();
   }
@@ -110,10 +110,10 @@
         <tr>
           <td><strong>${c.id}</strong></td>
           <td style="max-width:150px;font-size:0.85rem">
-            ${art ? `<a href="../article.html?id=${art.id}" target="_blank" style="color:var(--accent)">${escapeHtml(art.titre.substring(0, 40))}...</a>` : '—'}
+            ${art ? `<a href="../article.html?id=${art.id}" target="_blank" style="color:var(--gold-600)">${escapeHtml(art.titre.substring(0, 40))}...</a>` : '—'}
           </td>
           <td><strong>${escapeHtml(c.pseudo)}</strong></td>
-          <td style="font-size:0.82rem;color:var(--gris)">${escapeHtml(c.email || '—')}</td>
+          <td style="font-size:0.82rem;color:var(--ink-400)">${escapeHtml(c.email || '—')}</td>
           <td style="max-width:200px;font-size:0.88rem">
             ${escapeHtml(c.contenu.substring(0, 80))}${c.contenu.length > 80 ? '...' : ''}
           </td>

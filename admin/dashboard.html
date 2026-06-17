@@ -25,7 +25,7 @@
   <div class="admin-main">
     <div class="admin-topbar">
       <h2>Tableau de bord</h2>
-      <span style="color:var(--gris);font-size:0.9rem">Bienvenue, Admin</span>
+      <span style="color:var(--ink-400);font-size:.88rem;font-family:'Lato',sans-serif">Bienvenue, Admin</span>
     </div>
 
     <div class="admin-content">
@@ -36,16 +36,16 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-            <h3 style="font-family:'Playfair Display',serif">Articles récents</h3>
-            <a href="articles.html" style="color:var(--accent);font-size:0.88rem">Voir tout →</a>
+            <h3 style="font-family:'Cormorant Garamond',serif">Articles récents</h3>
+            <a href="articles.html" style="color:var(--gold-600);font-size:0.88rem">Voir tout →</a>
           </div>
           <div id="recentArticles"></div>
         </div>
 
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-            <h3 style="font-family:'Playfair Display',serif">Commentaires en attente</h3>
-            <a href="commentaires.html" style="color:var(--accent);font-size:0.88rem">Modérer →</a>
+            <h3 style="font-family:'Cormorant Garamond',serif">Commentaires en attente</h3>
+            <a href="commentaires.html" style="color:var(--gold-600);font-size:0.88rem">Modérer →</a>
           </div>
           <div id="pendingComments"></div>
         </div>
@@ -104,10 +104,10 @@
   // ---- Articles récents ----
   const recentArts = articles.slice(0, 4);
   document.getElementById('recentArticles').innerHTML = recentArts.map(a => `
-    <div style="background:white;padding:0.9rem 1.1rem;border-radius:5px;margin-bottom:0.7rem;box-shadow:0 1px 5px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center">
+    <div style="background:var(--white);border:1px solid var(--beige-100);padding:.9rem 1.1rem;border-radius:3px;margin-bottom:.6rem;box-shadow:0 1px 4px rgba(9,23,40,.05);display:flex;justify-content:space-between;align-items:center">
       <div>
-        <div style="font-size:0.9rem;font-weight:600">${escapeHtml(a.titre.substring(0, 45))}${a.titre.length > 45 ? '...' : ''}</div>
-        <div style="font-size:0.78rem;color:var(--gris)">${formatDateShort(a.date_publication)}</div>
+        <div style="font-size:.88rem;font-weight:700;color:var(--navy-800);font-family:'Lato',sans-serif">${escapeHtml(a.titre.substring(0, 45))}${a.titre.length > 45 ? '…' : ''}</div>
+        <div style="font-size:.75rem;color:var(--ink-400);font-family:'Lato',sans-serif">${formatDateShort(a.date_publication)}</div>
       </div>
       <span class="status-badge status-${a.statut}">${a.statut === 'publie' ? 'Publié' : 'Brouillon'}</span>
     </div>
@@ -115,10 +115,10 @@
 
   // ---- Commentaires en attente ----
   document.getElementById('pendingComments').innerHTML = comsPending.slice(0, 4).map(c => `
-    <div style="background:white;padding:0.9rem 1.1rem;border-radius:5px;margin-bottom:0.7rem;box-shadow:0 1px 5px rgba(0,0,0,0.05)">
+    <div style="background:var(--white);border:1px solid var(--beige-100);border-left:2px solid var(--gold-500);padding:.9rem 1.1rem;border-radius:3px;margin-bottom:.6rem;box-shadow:0 1px 4px rgba(9,23,40,.05)">
       <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem">
         <span style="font-weight:600;font-size:0.88rem">👤 ${escapeHtml(c.pseudo)}</span>
-        <span style="font-size:0.75rem;color:var(--gris)">${formatDateShort(c.date_commentaire)}</span>
+        <span style="font-size:0.75rem;color:var(--ink-400)">${formatDateShort(c.date_commentaire)}</span>
       </div>
       <div style="font-size:0.85rem;color:#444">${escapeHtml(c.contenu.substring(0, 80))}...</div>
       <div style="margin-top:0.5rem;display:flex;gap:0.5rem">

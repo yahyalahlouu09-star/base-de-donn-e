@@ -3,160 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MinimalBlog — Accueil</title>
+  <title>MinimalBlog — Le Journal de Marie Laurent</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- BARRE DE PROGRESSION SCROLL -->
+<div id="scrollProgress"></div>
+
+<!-- ============================================================
+     HEADER — masthead magazine
+     ============================================================ -->
 <header>
-  <a href="index.html" class="logo">Minimal<span>Blog</span></a>
-  <nav>
+  <nav class="nav-left">
     <a href="index.html">Accueil</a>
     <a href="index.html">Articles</a>
-    <a href="admin/login.html" class="btn-admin">Admin</a>
+  </nav>
+
+  <a href="index.html" class="logo">Minimal<span>·</span>Blog</a>
+
+  <nav class="nav-right">
+    <a href="admin/login.html" class="btn-admin">Administration</a>
   </nav>
 </header>
 
-<!-- HERO -->
-<div class="hero">
-  <h1>Le Blog de Marie Laurent</h1>
-  <p>Articles sur la technologie, les voyages, la culture et bien plus encore.</p>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Rechercher un article...">
-    <button onclick="rechercherArticles()">🔍</button>
-  </div>
-</div>
+<!-- ============================================================
+     HERO — pleine hauteur éditorial
+     ============================================================ -->
+<section class="hero" id="hero">
+  <div class="hero-bg-layer" id="heroBg"></div>
 
-<!-- CONTENU -->
-<div class="container">
+  <div class="hero-content">
+    <p class="hero-eyebrow">— Le Journal Personnel —</p>
+
+    <div class="hero-rule-top">
+      <span></span>
+      <span class="ornament">◆</span>
+      <span></span>
+    </div>
+
+    <h1 class="hero-title">
+      <em>Marie</em><br>Laurent
+    </h1>
+
+    <div class="hero-subtitle-rule">
+      <span></span>
+      <span class="dot"></span>
+      <span></span>
+    </div>
+
+    <p class="hero-tagline">Technologie · Voyage · Culture · Science · Lifestyle</p>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Chercher un article…">
+      <button onclick="rechercherArticles()">Chercher</button>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     BANDE CATÉGORIES — sticky
+     ============================================================ -->
+<div class="categories-strip">
   <div class="categories-filter" id="categoriesFilter">
     <button class="cat-btn active" onclick="filtrerCategorie(null, this)">Tous</button>
   </div>
+</div>
+
+<!-- ============================================================
+     GRILLE ARTICLES
+     ============================================================ -->
+<div class="articles-section container">
+
+  <div class="section-label reveal">
+    <span>Articles &amp; Chroniques</span>
+  </div>
 
   <div id="articlesGrid" class="articles-grid">
-    <!-- Articles générés dynamiquement -->
+    <div class="empty-state" style="grid-column:1/-1">
+      <p style="font-size:2rem;margin-bottom:.5rem">⏳</p>
+      Chargement des articles…
+    </div>
   </div>
 
   <div class="pagination" id="pagination"></div>
 </div>
 
-<!-- FOOTER -->
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
 <footer>
-  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA</p>
+  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA &nbsp;·&nbsp; Tous droits réservés</p>
 </footer>
 
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
 <script src="js/db.js"></script>
 <script>
-  // ---- Variables d'état ----
-  let pageActuelle = 1;
-  const ARTICLES_PAR_PAGE = 6;
+  /* ---- État ---- */
+  let pageActuelle    = 1;
+  const ARTICLES_PAGE = 6;
   let categorieActive = null;
   let rechercheActive = '';
 
-  // ---- Initialisation ----
+  /* ---- Init ---- */
   DB.init();
   chargerCategories();
   afficherArticles();
+  initScrollEffects();
 
-  // ---- Charger les catégories ----
+  /* ================================================================
+     DONNÉES
+     ================================================================ */
   function chargerCategories() {
-    const cats = DB.getCategories();
+    const cats   = DB.getCategories();
     const filter = document.getElementById('categoriesFilter');
     cats.forEach(cat => {
       const btn = document.createElement('button');
-      btn.className = 'cat-btn';
+      btn.className   = 'cat-btn';
       btn.textContent = cat.nom;
-      btn.onclick = function() { filtrerCategorie(cat.id, this); };
+      btn.onclick     = function() { filtrerCategorie(cat.id, this); };
       filter.appendChild(btn);
     });
   }
 
-  // ---- Filtrer par catégorie ----
   function filtrerCategorie(id, btn) {
     categorieActive = id;
-    pageActuelle = 1;
+    pageActuelle    = 1;
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     afficherArticles();
   }
 
-  // ---- Recherche ----
   function rechercherArticles() {
     rechercheActive = document.getElementById('searchInput').value.trim();
-    pageActuelle = 1;
+    pageActuelle    = 1;
     afficherArticles();
   }
 
   document.getElementById('searchInput').addEventListener('keyup', function(e) {
     if (e.key === 'Enter') rechercherArticles();
-    if (this.value === '') { rechercheActive = ''; afficherArticles(); }
+    if (!this.value)       { rechercheActive = ''; afficherArticles(); }
   });
 
-  // ---- Afficher les articles ----
   function afficherArticles() {
-    const articles = DB.getArticles('publie', categorieActive, rechercheActive || null);
-    const total = articles.length;
-    const totalPages = Math.ceil(total / ARTICLES_PAR_PAGE);
-    const debut = (pageActuelle - 1) * ARTICLES_PAR_PAGE;
-    const page = articles.slice(debut, debut + ARTICLES_PAR_PAGE);
+    const articles    = DB.getArticles('publie', categorieActive, rechercheActive || null);
+    const total       = articles.length;
+    const totalPages  = Math.ceil(total / ARTICLES_PAGE);
+    const debut       = (pageActuelle - 1) * ARTICLES_PAGE;
+    const page        = articles.slice(debut, debut + ARTICLES_PAGE);
+    const grid        = document.getElementById('articlesGrid');
 
-    const grid = document.getElementById('articlesGrid');
-
-    if (page.length === 0) {
-      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">😕 Aucun article trouvé.</div>';
+    if (!page.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <p style="font-size:2rem;margin-bottom:.5rem">📭</p>
+        Aucun article trouvé.
+      </div>`;
       document.getElementById('pagination').innerHTML = '';
       return;
     }
 
-    grid.innerHTML = page.map(art => {
-      const cat = DB.getCategorieById(art.categorie_id);
-      const coms = DB.getCommentaires(art.id, true);
-      const extrait = art.contenu.replace(/\n/g, ' ').substring(0, 150) + '...';
+    grid.innerHTML = page.map((art, idx) => {
+      const cat     = DB.getCategorieById(art.categorie_id);
+      const coms    = DB.getCommentaires(art.id, true);
+      const extrait = art.contenu.replace(/\n/g, ' ').substring(0, 160) + '…';
       return `
-        <div class="card" onclick="window.location='article.html?id=${art.id}'">
+        <article class="card" onclick="window.location='article.html?id=${art.id}'"
+                 style="transition-delay:${(idx % 3) * 0.1}s">
           <div class="card-img">
             ${art.image_principale
-              ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}" onerror="this.parentElement.innerHTML='${art.emoji || '📝'}';">`
-              : `<span style="font-size:3.5rem">${art.emoji || '📝'}</span>`
-            }
+              ? `<img src="${escapeHtml(art.image_principale)}" alt="${escapeHtml(art.titre)}"
+                     onerror="this.parentElement.innerHTML='<span style=font-size:3.5rem>${art.emoji || '📝'}</span>'">`
+              : `<span style="font-size:3.5rem">${art.emoji || '📝'}</span>`}
           </div>
           <div class="card-body">
             <div class="card-meta">
               <span class="badge">${cat ? escapeHtml(cat.nom) : 'Divers'}</span>
-              <span class="card-date">📅 ${formatDate(art.date_publication)}</span>
+              <span class="card-date">${formatDate(art.date_publication)}</span>
             </div>
             <h2>${escapeHtml(art.titre)}</h2>
             <p>${escapeHtml(extrait)}</p>
           </div>
           <div class="card-footer">
-            <span>✍️ ${escapeHtml(art.auteur)}</span>
-            <span>💬 ${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
-            <span class="read-more">Lire →</span>
+            <span>✍&thinsp;${escapeHtml(art.auteur)}</span>
+            <span>◇&thinsp;${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
+            <span class="read-more">Lire l'article →</span>
           </div>
-        </div>
-      `;
+        </article>`;
     }).join('');
 
-    // Pagination
     afficherPagination(totalPages);
+    initCardEffects();    // 3D tilt + scroll reveal
+    initRevealElements(); // autres éléments .reveal
   }
 
   function afficherPagination(totalPages) {
     const div = document.getElementById('pagination');
     if (totalPages <= 1) { div.innerHTML = ''; return; }
-    let html = '';
-    for (let i = 1; i <= totalPages; i++) {
-      html += `<button class="page-btn ${i === pageActuelle ? 'active' : ''}" onclick="changerPage(${i})">${i}</button>`;
-    }
-    div.innerHTML = html;
+    div.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1)
+      .map(i => `<button class="page-btn${i === pageActuelle ? ' active' : ''}"
+                   onclick="changerPage(${i})">${i}</button>`)
+      .join('');
   }
 
   function changerPage(n) {
     pageActuelle = n;
     afficherArticles();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: document.querySelector('.categories-strip').offsetTop - 70, behavior: 'smooth' });
   }
+
+  /* ================================================================
+     ANIMATIONS & EFFETS
+     ================================================================ */
+  function initScrollEffects() {
+    /* -- Barre de progression -- */
+    window.addEventListener('scroll', () => {
+      const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      document.getElementById('scrollProgress').style.width = (pct * 100) + '%';
+    }, { passive: true });
+
+    /* -- Parallaxe hero -- */
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const bg = document.getElementById('heroBg');
+      if (bg && y < window.innerHeight * 1.2) {
+        bg.style.transform = `translateY(${y * 0.35}px)`;
+      }
+    }, { passive: true });
+  }
+
+  /* -- Scroll-reveal + 3D tilt sur les cartes -- */
+  function initCardEffects() {
+    const cards = document.querySelectorAll('.card');
+
+    /* IntersectionObserver pour le reveal */
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('card-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    cards.forEach(card => {
+      io.observe(card);
+
+      /* 3D tilt au mouvement de souris */
+      card.addEventListener('mousemove', function(e) {
+        const r  = this.getBoundingClientRect();
+        const x  = ((e.clientX - r.left) / r.width  - .5) * 14;
+        const y  = ((e.clientY - r.top)  / r.height - .5) * -14;
+        this.style.transition = 'box-shadow .3s, border-color .3s';
+        this.style.transform  = `perspective(900px) rotateX(${y}deg) rotateY(${x}deg) translateY(-6px)`;
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transition = 'opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s';
+        this.style.transform  = '';
+      });
+    });
+  }
+
+  /* -- Reveal générique pour .reveal -- */
+  function initRevealElements() {
+    const io2 = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          io2.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal:not(.revealed)').forEach(el => io2.observe(el));
+  }
+
+  /* Appel initial pour les éléments statiques */
+  initRevealElements();
 </script>
 </body>
 </html>

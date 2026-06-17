@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Articles</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Minimal<span>Blog</span></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html">    <span class="icon">📊</span> Tableau de bord</a></li>
+      <li><a href="articles.html" class="active"><span class="icon">📝</span> Articles</a></li>
+      <li><a href="commentaires.html"> <span class="icon">💬</span> Commentaires</a></li>
+      <li><a href="../index.html" target="_blank"><span class="icon">🌐</span> Voir le blog</a></li>
+      <li style="margin-top:2rem">
+        <a href="#" onclick="seDeconnecter()"><span class="icon">🚪</span> Déconnexion</a>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h2>Gestion des Articles</h2>
+      <button class="btn btn-accent" onclick="ouvrirModalAjout()">+ Nouvel article</button>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- Filtres -->
+      <div style="display:flex;gap:.8rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <select id="filtreStatut" onchange="chargerArticles()"
+          style="padding:.55rem 1rem;border:1px solid var(--glass-bd);border-radius:10px;background:var(--glass-bg);color:var(--blanc);font-family:'Space Grotesk',sans-serif;backdrop-filter:blur(10px);cursor:pointer">
+          <option value="">Tous les statuts</option>
+          <option value="publie">Publiés</option>
+          <option value="brouillon">Brouillons</option>
+        </select>
+        <select id="filtreCategorie" onchange="chargerArticles()"
+          style="padding:.55rem 1rem;border:1px solid var(--glass-bd);border-radius:10px;background:var(--glass-bg);color:var(--blanc);font-family:'Space Grotesk',sans-serif;backdrop-filter:blur(10px);cursor:pointer">
+          <option value="">Toutes les catégories</option>
+        </select>
+        <input type="text" id="filtreSearch" placeholder="🔍 Rechercher…"
+          oninput="debounce(chargerArticles, 400)()"
+          style="padding:.55rem 1rem;border:1px solid var(--glass-bd);border-radius:10px;background:var(--glass-bg);color:var(--blanc);font-family:'Space Grotesk',sans-serif;flex:1;min-width:200px;outline:none">
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Titre</th>
+            <th>Catégorie</th>
+            <th>Auteur</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th style="text-align:center">💬</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="articlesTableBody">
+          <tr><td colspan="8" class="empty-state">⏳ Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Ajout / Édition -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitre">Nouvel article</h3>
+      <button class="btn-close" onclick="fermerModal()">✕</button>
+    </div>
+
+    <input type="hidden" id="articleId">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Catégorie *</label>
+        <select id="formCategorie"></select>
+      </div>
+      <div class="form-group">
+        <label>Statut</label>
+        <select id="formStatut">
+          <option value="brouillon">Brouillon</option>
+          <option value="publie">Publié</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Titre *</label>
+      <input type="text" id="formTitre" placeholder="Titre de l'article" maxlength="255">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Auteur *</label>
+        <input type="text" id="formAuteur" placeholder="Nom de l'auteur" maxlength="100">
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" id="formEmoji" placeholder="📝" maxlength="5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Image (URL)</label>
+      <input type="text" id="formImage" placeholder="https://exemple.com/image.jpg">
+    </div>
+    <div class="form-group">
+      <label>Contenu *</label>
+      <textarea id="formContenu" rows="9"
+        placeholder="Rédigez votre article… (une ligne vide = nouveau paragraphe)"></textarea>
+    </div>
+
+    <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-accent" id="saveBtn" onclick="sauvegarderArticle()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script>const API_BASE = '../../backend/api';</script>
+<script src="../assets/js/utils.js"></script>
+<script>
+  let categories = [];
+
+  // ---- Init ----
+  (async () => {
+    try { await API.get('auth.php'); }
+    catch { location.href = 'login.html'; return; }
+    await Promise.all([chargerCategoriesSelects(), chargerArticles()]);
+  })();
+
+  async function seDeconnecter() {
+    try { await API.delete('auth.php'); } catch {}
+    location.href = 'login.html';
+  }
+
+  // ---- Debounce ----
+  function debounce(fn, ms) {
+    let t;
+    return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+
+  // ---- Catégories ----
+  async function chargerCategoriesSelects() {
+    categories = await API.get('categories.php');
+    const selFil  = document.getElementById('filtreCategorie');
+    const selForm = document.getElementById('formCategorie');
+    categories.forEach(c => {
+      selFil.innerHTML  += `<option value="${c.id}">${escHtml(c.nom)}</option>`;
+      selForm.innerHTML += `<option value="${c.id}">${escHtml(c.nom)}</option>`;
+    });
+  }
+
+  // ---- Liste articles ----
+  async function chargerArticles() {
+    const tbody = document.getElementById('articlesTableBody');
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">⏳ Chargement…</td></tr>';
+    try {
+      const params = { per_page: 50 };
+      const statut = document.getElementById('filtreStatut').value;
+      const catId  = document.getElementById('filtreCategorie').value;
+      const q      = document.getElementById('filtreSearch').value.trim();
+      if (statut) params.statut       = statut;
+      if (catId)  params.categorie_id = catId;
+      if (q)      params.search       = q;
+
+      const { articles } = await API.get('articles.php', params);
+
+      if (!articles.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Aucun article trouvé.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = articles.map(a => `
+        <tr>
+          <td><strong>${a.id}</strong></td>
+          <td style="max-width:220px">
+            <div style="font-weight:600;font-size:.88rem;color:var(--blanc)">
+              ${escHtml(a.titre.substring(0, 48))}${a.titre.length > 48 ? '…' : ''}
+            </div>
+          </td>
+          <td><span class="badge">${escHtml(a.categorie_nom || '—')}</span></td>
+          <td style="font-size:.85rem">${escHtml(a.auteur)}</td>
+          <td style="font-size:.82rem;font-family:'JetBrains Mono',monospace">${formatDateShort(a.date_publication)}</td>
+          <td><span class="status-badge status-${a.statut}">${a.statut === 'publie' ? 'Publié' : 'Brouillon'}</span></td>
+          <td style="text-align:center;font-size:.85rem">${a.nb_commentaires}</td>
+          <td>
+            <div class="actions">
+              <a href="../article.html?id=${a.id}" target="_blank"
+                 class="btn btn-secondary btn-sm" title="Voir">👁</a>
+              <button class="btn btn-primary btn-sm"
+                      onclick="ouvrirModalEdit(${a.id})" title="Modifier">✏️</button>
+              <button class="btn btn-danger btn-sm"
+                      onclick="supprimerArticle(${a.id}, '${escHtml(a.titre.replace(/'/g, "\\'"))}')"
+                      title="Supprimer">🗑</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">❌ ${escHtml(e.message)}</td></tr>`;
+    }
+  }
+
+  // ---- Modal ----
+  function ouvrirModalAjout() {
+    document.getElementById('modalTitre').textContent    = 'Nouvel article';
+    document.getElementById('articleId').value           = '';
+    document.getElementById('formTitre').value           = '';
+    document.getElementById('formAuteur').value          = 'Marie Laurent';
+    document.getElementById('formContenu').value         = '';
+    document.getElementById('formImage').value           = '';
+    document.getElementById('formEmoji').value           = '📝';
+    document.getElementById('formStatut').value          = 'brouillon';
+    document.getElementById('formCategorie').selectedIndex = 0;
+    document.getElementById('modalOverlay').classList.add('open');
+    document.getElementById('formTitre').focus();
+  }
+
+  async function ouvrirModalEdit(id) {
+    try {
+      const a = await API.get(`articles.php?id=${id}`);
+      document.getElementById('modalTitre').textContent  = 'Modifier l\'article';
+      document.getElementById('articleId').value         = a.id;
+      document.getElementById('formTitre').value         = a.titre;
+      document.getElementById('formAuteur').value        = a.auteur;
+      document.getElementById('formContenu').value       = a.contenu;
+      document.getElementById('formImage').value         = a.image_principale || '';
+      document.getElementById('formEmoji').value         = a.emoji || '📝';
+      document.getElementById('formStatut').value        = a.statut;
+      document.getElementById('formCategorie').value     = a.categorie_id;
+      document.getElementById('modalOverlay').classList.add('open');
+    } catch (e) { showNotification(e.message, 'error'); }
+  }
+
+  function fermerModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) fermerModal();
+  });
+
+  // ---- Sauvegarde ----
+  async function sauvegarderArticle() {
+    const id      = document.getElementById('articleId').value;
+    const titre   = document.getElementById('formTitre').value.trim();
+    const auteur  = document.getElementById('formAuteur').value.trim();
+    const contenu = document.getElementById('formContenu').value.trim();
+    const catId   = parseInt(document.getElementById('formCategorie').value);
+    const statut  = document.getElementById('formStatut').value;
+    const image   = document.getElementById('formImage').value.trim();
+    const emoji   = document.getElementById('formEmoji').value.trim() || '📝';
+
+    // Validation
+    if (!titre)       { showNotification('Le titre est obligatoire.',   'error'); return; }
+    if (!auteur)      { showNotification('L\'auteur est obligatoire.',  'error'); return; }
+    if (!contenu)     { showNotification('Le contenu est obligatoire.', 'error'); return; }
+    if (!catId)       { showNotification('Choisissez une catégorie.',   'error'); return; }
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Sauvegarde…';
+
+    const data = { titre, auteur, contenu, categorie_id: catId, statut, image_principale: image, emoji };
+
+    try {
+      if (id) {
+        await API.put(`articles.php?id=${id}`, data);
+        showNotification('✅ Article modifié avec succès !');
+      } else {
+        await API.post('articles.php', data);
+        showNotification('✅ Article créé avec succès !', 'success');
+      }
+      fermerModal();
+      chargerArticles();
+    } catch (e) {
+      showNotification(`❌ ${e.message}`, 'error');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = '💾 Sauvegarder';
+    }
+  }
+
+  // ---- Supprimer ----
+  async function supprimerArticle(id, titre) {
+    if (!confirm(`Supprimer "${titre}" ?\nSes commentaires seront aussi supprimés.`)) return;
+    try {
+      await API.delete(`articles.php?id=${id}`);
+      showNotification('🗑 Article supprimé.', 'error');
+      chargerArticles();
+    } catch (e) { showNotification(e.message, 'error'); }
+  }
+</script>
+</body>
+</html>

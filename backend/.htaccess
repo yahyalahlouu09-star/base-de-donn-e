@@ -1,0 +1,13 @@
+# Empêcher la navigation dans les dossiers
+Options -Indexes
+
+# Bloquer l'accès direct à config.php
+<Files "config.php">
+  Order Allow,Deny
+  Deny from all
+</Files>
+
+# En-têtes de sécurité
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"

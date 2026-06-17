@@ -29,16 +29,18 @@
     <div class="admin-content">
       <!-- Filtres -->
       <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
-        <select id="filtreStatut" onchange="chargerArticles()" style="padding:0.5rem 1rem;border:1.5px solid var(--gris-clair);border-radius:4px;font-family:'Source Sans 3',sans-serif;background:white">
+        <select id="filtreStatut" onchange="chargerArticles()"
+          style="padding:.55rem 1rem;border:1px solid var(--beige-200);border-radius:3px;font-family:'Lato',sans-serif;font-size:.82rem;background:var(--white);color:var(--ink);cursor:pointer">
           <option value="">Tous les statuts</option>
           <option value="publie">Publiés</option>
           <option value="brouillon">Brouillons</option>
         </select>
-        <select id="filtreCategorie" onchange="chargerArticles()" style="padding:0.5rem 1rem;border:1.5px solid var(--gris-clair);border-radius:4px;font-family:'Source Sans 3',sans-serif;background:white">
+        <select id="filtreCategorie" onchange="chargerArticles()"
+          style="padding:.55rem 1rem;border:1px solid var(--beige-200);border-radius:3px;font-family:'Lato',sans-serif;font-size:.82rem;background:var(--white);color:var(--ink);cursor:pointer">
           <option value="">Toutes les catégories</option>
         </select>
-        <input type="text" id="filtreSearch" placeholder="🔍 Rechercher..." oninput="chargerArticles()"
-          style="padding:0.5rem 1rem;border:1.5px solid var(--gris-clair);border-radius:4px;font-family:'Source Sans 3',sans-serif;flex:1;min-width:200px">
+        <input type="text" id="filtreSearch" placeholder="Rechercher…" oninput="chargerArticles()"
+          style="padding:.55rem 1rem;border:1px solid var(--beige-200);border-radius:3px;font-family:'Lato',sans-serif;font-size:.82rem;flex:1;min-width:200px;background:var(--white);color:var(--ink);outline:none">
       </div>
 
       <table class="data-table">

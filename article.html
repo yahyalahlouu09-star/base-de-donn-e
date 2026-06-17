@@ -5,146 +5,289 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MinimalBlog — Article</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ---- Styles propres à la page article ---- */
+    .article-hero {
+      background:var(--navy-900);
+      padding:7rem 2rem 4rem;
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .article-hero::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse 80% 60% at 50% 80%, rgba(192,148,80,.07) 0%, transparent 60%);
+    }
+    .article-hero-inner {
+      position:relative; z-index:1; max-width:760px; margin:0 auto;
+    }
+    .article-hero-eyebrow {
+      font-family:'Lato', sans-serif; font-size:.68rem; font-weight:700;
+      letter-spacing:3.5px; text-transform:uppercase;
+      color:var(--gold-400); margin-bottom:1.2rem;
+      display:flex; align-items:center; justify-content:center; gap:.8rem;
+    }
+    .article-hero-eyebrow span { width:30px; height:1px; background:var(--gold-600); }
+
+    .article-hero h1 {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(2.2rem, 5.5vw, 3.8rem);
+      font-weight:300; line-height:1.18;
+      color:var(--cream); margin-bottom:1.8rem;
+    }
+    .article-hero h1 em { font-style:italic; color:var(--gold-300); }
+
+    .article-hero-meta {
+      display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;
+      font-size:.75rem; color:rgba(245,238,221,.45);
+      font-family:'Lato', sans-serif; letter-spacing:.5px;
+    }
+    .article-hero-meta span { display:flex; align-items:center; gap:.4rem; }
+    .article-hero-meta .badge {
+      border-color:rgba(192,148,80,.5); color:var(--gold-300);
+    }
+
+    /* ---- Contenu ---- */
+    .article-wrapper { max-width:760px; margin:3.5rem auto 0; padding:0 2rem; }
+
+    .article-image-full {
+      width:100%; height:440px; overflow:hidden;
+      margin:0; display:block;
+      background:var(--beige-50);
+    }
+    .article-image-full img {
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .8s ease;
+    }
+    .article-image-full:hover img { transform:scale(1.03); }
+    .article-image-full .emoji-placeholder {
+      width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:6rem; background:linear-gradient(160deg, var(--beige-50), var(--beige-100));
+    }
+
+    .article-body {
+      padding:3.5rem 0 2rem;
+      font-family:'EB Garamond', Georgia, serif;
+      font-size:1.18rem; line-height:2; color:var(--ink-600);
+    }
+    .article-body p { margin-bottom:1.5rem; }
+    .article-body p:first-child::first-letter {
+      font-family:'Cormorant Garamond', serif;
+      font-size:4.5rem; font-weight:600;
+      float:left; line-height:.75; margin:0 .12em 0 0;
+      color:var(--navy-700);
+    }
+
+    /* Séparateur fin */
+    .article-divider {
+      display:flex; align-items:center; gap:1rem;
+      margin:2rem 0; color:var(--gold-500);
+    }
+    .article-divider span { flex:1; height:1px; background:var(--beige-200); }
+    .article-divider em { font-size:1rem; }
+
+    /* back-link */
+    .back-link {
+      display:inline-flex; align-items:center; gap:.5rem;
+      font-size:.72rem; font-weight:700; letter-spacing:1.5px;
+      text-transform:uppercase; color:var(--gold-500);
+      margin:3rem 0 1rem;
+      transition:gap .25s;
+    }
+    .back-link:hover { gap:.9rem; color:var(--gold-600); }
+  </style>
 </head>
 <body>
 
+<!-- SCROLL PROGRESS -->
+<div id="scrollProgress"></div>
+
+<!-- HEADER -->
 <header>
-  <a href="index.html" class="logo">Minimal<span>Blog</span></a>
-  <nav>
-    <a href="index.html">← Retour</a>
+  <nav class="nav-left">
+    <a href="index.html">← Accueil</a>
+  </nav>
+  <a href="index.html" class="logo">Minimal<span>·</span>Blog</a>
+  <nav class="nav-right">
     <a href="admin/login.html" class="btn-admin">Admin</a>
   </nav>
 </header>
 
-<div class="article-detail">
+<!-- HERO ARTICLE (rempli par JS) -->
+<div id="articleHero" class="article-hero" style="display:none">
+  <div class="article-hero-inner" id="articleHeroInner"></div>
+</div>
+
+<!-- IMAGE PLEINE LARGEUR -->
+<div id="articleImageFull" class="article-image-full" style="display:none"></div>
+
+<!-- CONTENU ARTICLE -->
+<div class="article-wrapper">
   <div id="articleContent">
-    <!-- Chargé dynamiquement -->
+    <div class="empty-state">⏳ Chargement…</div>
   </div>
 
+  <!-- COMMENTAIRES -->
   <div class="comments-section" id="commentsSection" style="display:none">
+
+    <div class="article-divider">
+      <span></span><em>◆</em><span></span>
+    </div>
+
     <h3>Commentaires</h3>
 
-    <!-- Formulaire ajout commentaire -->
     <div class="comment-form">
       <h4>Laisser un commentaire</h4>
-      <div id="successMsg" class="success-msg">✅ Votre commentaire a été soumis et est en attente de modération. Merci !</div>
+      <div id="successMsg" class="success-msg">
+        ✅ Votre commentaire a été soumis — il apparaîtra après modération. Merci !
+      </div>
+      <div id="errorMsg" class="error-msg"></div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Pseudo *</label>
-          <input type="text" id="pseudo" placeholder="Votre pseudo" maxlength="50">
+          <input type="text" id="pseudo" placeholder="Votre pseudo" maxlength="80">
         </div>
         <div class="form-group">
-          <label>Email</label>
+          <label>Email (optionnel)</label>
           <input type="email" id="email" placeholder="votre@email.com">
         </div>
       </div>
+
       <div class="form-group">
         <label>Commentaire *</label>
-        <textarea id="contenu" placeholder="Écrivez votre commentaire..." rows="4"></textarea>
+        <textarea id="contenu" placeholder="Partagez votre point de vue…" rows="4"></textarea>
       </div>
-      <button class="btn btn-accent" onclick="soumettreCommentaire()">Publier le commentaire</button>
+
+      <button class="btn btn-accent" id="submitBtn" onclick="soumettreCommentaire()">
+        Publier le commentaire
+      </button>
     </div>
 
-    <!-- Liste commentaires approuvés -->
     <div id="commentsList"></div>
   </div>
+
+  <a href="index.html" class="back-link">← Retour aux articles</a>
 </div>
 
+<!-- FOOTER -->
 <footer>
   <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA</p>
 </footer>
 
+<!-- SCRIPTS -->
 <script src="js/db.js"></script>
 <script>
+  /* ---- Init ---- */
   DB.init();
 
-  // Lire l'ID depuis l'URL
-  const params = new URLSearchParams(window.location.search);
+  /* ---- Récupérer l'ID ---- */
+  const params    = new URLSearchParams(location.search);
   const articleId = params.get('id');
+  if (!articleId) location.href = 'index.html';
 
-  if (!articleId) {
-    window.location.href = 'index.html';
-  }
+  /* ---- Scroll progress ---- */
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    document.getElementById('scrollProgress').style.width = (pct * 100) + '%';
+  }, { passive:true });
 
+  /* ---- Charger l'article ---- */
   const article = DB.getArticleById(articleId);
 
   if (!article || article.statut !== 'publie') {
     document.getElementById('articleContent').innerHTML = `
-      <div class="empty-state">
-        <p style="font-size:3rem">😕</p>
-        <p>Article introuvable ou non publié.</p>
-        <a href="index.html" class="btn btn-primary mt-1">Retour à l'accueil</a>
+      <div class="empty-state" style="padding:5rem 0">
+        <p style="font-size:3rem;margin-bottom:1rem">📭</p>
+        <p style="margin-bottom:1.5rem">Article introuvable ou non publié.</p>
+        <a href="index.html" class="btn btn-primary">← Retour à l'accueil</a>
       </div>`;
   } else {
-    // Mettre à jour le titre de la page
     document.title = `MinimalBlog — ${article.titre}`;
 
-    const cat = DB.getCategorieById(article.categorie_id);
+    const cat  = DB.getCategorieById(article.categorie_id);
     const coms = DB.getCommentaires(article.id, true);
 
-    // Afficher l'article
-    document.getElementById('articleContent').innerHTML = `
-      <div class="article-header">
-        <div style="margin-bottom:1rem">
-          <span class="badge">${cat ? escapeHtml(cat.nom) : 'Divers'}</span>
-        </div>
-        <h1>${escapeHtml(article.titre)}</h1>
-        <div class="article-info">
-          <span>✍️ ${escapeHtml(article.auteur)}</span>
-          <span>📅 ${formatDate(article.date_publication)}</span>
-          <span>💬 ${coms.length} commentaire${coms.length !== 1 ? 's' : ''} approuvé${coms.length !== 1 ? 's' : ''}</span>
-        </div>
+    /* -- Hero -- */
+    document.getElementById('articleHero').style.display = 'block';
+    document.getElementById('articleHeroInner').innerHTML = `
+      <div class="article-hero-eyebrow">
+        <span></span>
+        ${cat ? escapeHtml(cat.nom) : 'Divers'}
+        <span></span>
       </div>
-      <div class="article-img">
-        ${article.image_principale
-          ? `<img src="${escapeHtml(article.image_principale)}" alt="${escapeHtml(article.titre)}" onerror="this.parentElement.innerHTML='<span style=font-size:5rem>${article.emoji || '📝'}</span>'">`
-          : `<span style="font-size:5rem">${article.emoji || '📝'}</span>`
-        }
-      </div>
-      <div class="article-content">
-        ${article.contenu.split('\n').filter(p => p.trim()).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-      </div>
-    `;
+      <h1>${escapeHtml(article.titre)}</h1>
+      <div class="article-hero-meta">
+        <span>✍&thinsp;${escapeHtml(article.auteur)}</span>
+        <span>◈&thinsp;${formatDate(article.date_publication)}</span>
+        <span>◇&thinsp;${coms.length} commentaire${coms.length !== 1 ? 's' : ''}</span>
+      </div>`;
 
-    // Afficher section commentaires
+    /* -- Image pleine largeur -- */
+    const imgEl = document.getElementById('articleImageFull');
+    imgEl.style.display = 'block';
+    if (article.image_principale) {
+      imgEl.innerHTML = `<img src="${escapeHtml(article.image_principale)}"
+                              alt="${escapeHtml(article.titre)}"
+                              onerror="this.parentElement.innerHTML='<div class=emoji-placeholder>${article.emoji || '📝'}</div>'">`;
+    } else {
+      imgEl.innerHTML = `<div class="emoji-placeholder">${article.emoji || '📝'}</div>`;
+    }
+
+    /* -- Corps -- */
+    document.getElementById('articleContent').innerHTML = `
+      <div class="article-body">
+        ${article.contenu.split('\n').filter(p => p.trim()).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      </div>`;
+
+    /* -- Commentaires -- */
     document.getElementById('commentsSection').style.display = 'block';
     afficherCommentaires();
   }
 
+  /* ---- Commentaires ---- */
   function afficherCommentaires() {
     const coms = DB.getCommentaires(articleId, true);
-    const div = document.getElementById('commentsList');
-    if (coms.length === 0) {
-      div.innerHTML = '<p style="color:var(--gris);font-size:0.95rem">Aucun commentaire approuvé pour l\'instant. Soyez le premier !</p>';
+    const div  = document.getElementById('commentsList');
+
+    if (!coms.length) {
+      div.innerHTML = '<p style="color:var(--ink-400);font-size:.92rem;margin-top:.5rem">Aucun commentaire pour le moment. Soyez le premier !</p>';
       return;
     }
     div.innerHTML = coms.map(c => `
       <div class="comment-item">
-        <span class="comment-author">👤 ${escapeHtml(c.pseudo)}</span>
+        <span class="comment-author">◆ ${escapeHtml(c.pseudo)}</span>
         <span class="comment-date">${formatDate(c.date_commentaire)}</span>
         <div class="comment-text">${escapeHtml(c.contenu)}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
+  /* ---- Soumettre un commentaire ---- */
   function soumettreCommentaire() {
-    const pseudo = document.getElementById('pseudo').value.trim();
-    const email = document.getElementById('email').value.trim();
+    const pseudo  = document.getElementById('pseudo').value.trim();
+    const email   = document.getElementById('email').value.trim();
     const contenu = document.getElementById('contenu').value.trim();
+    const errEl   = document.getElementById('errorMsg');
+    const sucEl   = document.getElementById('successMsg');
 
-    if (!pseudo) { alert('Le pseudo est obligatoire.'); return; }
-    if (!contenu) { alert('Le commentaire est vide.'); return; }
+    errEl.style.display = 'none';
+
+    if (!pseudo)  { errEl.textContent = '⚠ Le pseudo est obligatoire.';  errEl.style.display = 'block'; return; }
+    if (!contenu) { errEl.textContent = '⚠ Le commentaire est vide.';    errEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Envoi en cours…';
 
     DB.addCommentaire({ article_id: parseInt(articleId), pseudo, email, contenu });
 
-    // Reset form
-    document.getElementById('pseudo').value = '';
-    document.getElementById('email').value = '';
+    document.getElementById('pseudo').value  = '';
+    document.getElementById('email').value   = '';
     document.getElementById('contenu').value = '';
 
-    const msg = document.getElementById('successMsg');
-    msg.style.display = 'block';
-    setTimeout(() => msg.style.display = 'none', 5000);
+    sucEl.style.display = 'block';
+    setTimeout(() => sucEl.style.display = 'none', 6000);
+    btn.disabled    = false;
+    btn.textContent = 'Publier le commentaire';
   }
 </script>
 </body>
