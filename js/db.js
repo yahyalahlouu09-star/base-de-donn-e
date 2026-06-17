@@ -6,17 +6,19 @@ const DB = {
 
   // ---- Initialisation des données de démo ----
   init() {
-    if (!localStorage.getItem('mb_initialized')) {
+    if (!localStorage.getItem('mb_initialized_v3')) {
+      localStorage.removeItem('mb_initialized');
+      localStorage.removeItem('mb_initialized_v2');
       this.seedCategories();
       this.seedArticles();
       this.seedCommentaires();
       this.seedAdmin();
-      localStorage.setItem('mb_initialized', 'true');
+      localStorage.setItem('mb_initialized_v3', 'true');
     }
   },
 
   reset() {
-    localStorage.removeItem('mb_initialized');
+    localStorage.removeItem('mb_initialized_v3');
     localStorage.removeItem('mb_categories');
     localStorage.removeItem('mb_articles');
     localStorage.removeItem('mb_commentaires');
@@ -61,7 +63,7 @@ const DB = {
         contenu: `L'intelligence artificielle a connu une évolution spectaculaire ces dernières années. Des modèles de langage aux systèmes de vision par ordinateur, les avancées sont impressionnantes.\n\nLes grands modèles de langage (LLM) sont désormais capables de raisonnement complexe, de génération de code et même de résolution de problèmes mathématiques avancés. Cette révolution technologique impacte tous les secteurs : médecine, éducation, industrie...\n\nCependant, des questions éthiques importantes se posent : biais algorithmiques, impact sur l'emploi, vie privée. La régulation de l'IA devient un enjeu majeur pour les gouvernements du monde entier.`,
         date_publication: '2025-03-15T10:00:00',
         auteur: 'Marie Laurent',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=900&q=80',
         statut: 'publie',
         emoji: '🤖'
       },
@@ -71,7 +73,7 @@ const DB = {
         contenu: `Le Japon est une destination fascinante qui mêle tradition millénaire et modernité ultra-développée. De Tokyo à Kyoto, chaque ville offre une expérience unique et inoubliable.\n\nCommencez votre voyage à Tokyo, la capitale dynamique. Shibuya, Akihabara, Asakusa — chaque quartier a sa personnalité propre. Le mont Fuji est incontournable pour les amateurs de randonnée.\n\nKyoto, l'ancienne capitale impériale, regorge de temples bouddhistes et de jardins zen. Arashiyama et son célèbre bambouseraie, Fushimi Inari et ses milliers de torii rouges... La magie est partout.`,
         date_publication: '2025-02-20T14:30:00',
         auteur: 'Thomas Dubois',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=900&q=80',
         statut: 'publie',
         emoji: '🗾'
       },
@@ -81,7 +83,7 @@ const DB = {
         contenu: `La cuisine marocaine est l'une des plus riches et des plus variées du monde. Mélange d'influences berbères, arabes, méditerranéennes et andalouses, elle offre une palette de saveurs extraordinaire.\n\nLe tajine est sans doute le plat le plus emblématique. Cuit lentement dans un plat en terre cuite, il peut être préparé avec du poulet, de l'agneau ou des légumes, toujours agrémenté d'épices soigneusement dosées.\n\nLa harira, soupe nourrissante à base de tomates, lentilles et pois chiches, est incontournable pendant le Ramadan. Et n'oublions pas la pastilla, ce feuilleté sucré-salé à la volaille, véritable chef-d'œuvre de la gastronomie.`,
         date_publication: '2025-01-10T09:00:00',
         auteur: 'Fatima Amrani',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=900&q=80',
         statut: 'publie',
         emoji: '🍲'
       },
@@ -91,7 +93,7 @@ const DB = {
         contenu: `Les missions martiennes récentes ont révélé des données fascinantes sur la planète rouge. Les rovers Perseverance et Curiosity continuent d'explorer la surface avec des résultats remarquables.\n\nDes traces d'eau ancienne ont été découvertes dans plusieurs régions, suggérant que Mars a connu un passé plus clément. Des minéraux organiques ont également été détectés, alimentant les spéculations sur une possible vie primitive.\n\nLes projets d'exploration humaine de Mars avancent. SpaceX, NASA et d'autres agences spatiales travaillent activement à des missions habitées prévues pour les années 2030.`,
         date_publication: '2025-04-05T16:00:00',
         auteur: 'Jean-Pierre Moreau',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=80',
         statut: 'publie',
         emoji: '🚀'
       },
@@ -101,7 +103,7 @@ const DB = {
         contenu: `Né à la Nouvelle-Orléans au début du XXe siècle, le jazz est bien plus qu'un genre musical — c'est une philosophie de la liberté d'expression et de l'improvisation.\n\nDes pionniers comme Louis Armstrong et Duke Ellington ont défini les bases de ce langage musical unique. Miles Davis a révolutionné le genre avec le cool jazz puis le jazz fusion. John Coltrane a repoussé les limites avec ses explorations harmoniques audacieuses.\n\nAujourd'hui, le jazz continue d'évoluer, absorbant des influences du hip-hop, de la musique électronique et des traditions musicales du monde entier.`,
         date_publication: '2025-03-28T11:00:00',
         auteur: 'Sophie Renard',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&w=900&q=80',
         statut: 'publie',
         emoji: '🎷'
       },
@@ -111,7 +113,7 @@ const DB = {
         contenu: `Python et JavaScript sont deux des langages les plus populaires du moment. Chacun a ses forces et ses domaines de prédilection.\n\nPython excelle dans la data science, le machine learning et l'automatisation. Sa syntaxe claire et ses bibliothèques riches comme NumPy, Pandas et TensorFlow en font le choix de référence pour les data scientists.\n\nJavaScript, quant à lui, domine le développement web front-end et est désormais présent côté serveur avec Node.js. Son écosystème React/Vue/Angular est incontournable pour les développeurs web.`,
         date_publication: '2025-04-18T10:00:00',
         auteur: 'Alex Chen',
-        image_principale: '',
+        image_principale: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
         statut: 'brouillon',
         emoji: '💻'
       }
