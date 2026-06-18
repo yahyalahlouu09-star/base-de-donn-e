@@ -89,7 +89,7 @@ switch (method()) {
             if (empty($b[$field])) err("Champ « $field » requis");
         }
 
-        $statut = in_array($b['statut'] ?? '', ['publie', 'brouillon']) ? $b['statut'] : 'brouillon';
+        $statut = in_array($b['statut'] ?? '', ['publie', 'brouillon', 'soumis']) ? $b['statut'] : 'brouillon';
         $datePub = $statut === 'publie' ? date('Y-m-d H:i:s') : null;
 
         $stmt = db()->prepare('
@@ -123,7 +123,7 @@ switch (method()) {
             if (empty($b[$field])) err("Champ « $field » requis");
         }
 
-        $statut = in_array($b['statut'] ?? '', ['publie', 'brouillon']) ? $b['statut'] : 'brouillon';
+        $statut = in_array($b['statut'] ?? '', ['publie', 'brouillon', 'soumis']) ? $b['statut'] : 'brouillon';
 
         $stmt = db()->prepare('
             UPDATE articles SET

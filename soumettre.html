@@ -371,8 +371,13 @@
     document.getElementById('scrollProgress').style.width = (pct * 100) + '%';
   }, { passive: true });
 
+  /* Détecter si on tourne sous XAMPP (PHP dispo) ou en fichier local */
+  const API_BASE = (location.protocol === 'file:')
+    ? null
+    : location.origin + '/minimalblog/backend/api';
+
   /* Soumettre */
-  function soumettreArticle() {
+  async function soumettreArticle() {
     const nom     = document.getElementById('sfNom').value.trim();
     const email   = document.getElementById('sfEmail').value.trim();
     const titre   = document.getElementById('sfTitre').value.trim();
@@ -386,20 +391,50 @@
     if (!contenu){ flashError('sfContenu','Le contenu est requis.'); return; }
     const wordCount = contenu.split(/\s+/).length;
     if (wordCount < 50) {
-      flashError('sfContenu', 'L\'article est trop court (minimum 50 mots).');
+      flashError('sfContenu', "L'article est trop court (minimum 50 mots).");
       return;
     }
 
-    DB.addArticle({
+    const payload = {
       titre,
       auteur: nom,
-      email_auteur: email,
+      email: email,
       contenu,
       categorie_id: catId,
       statut: 'soumis',
       image_principale: image || ''
-    });
+    };
 
+    /* 1. Sauvegarder en localStorage (toujours) */
+    DB.addArticle({ ...payload, auteur: nom, email_auteur: email });
+
+    /* 2. Sauvegarder dans MySQL via l'API PHP (si XAMPP disponible) */
+    if (API_BASE) {
+      try {
+        const btn = document.querySelector('.submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'Envoi en cours…';
+
+        const res = await fetch(`${API_BASE}/soumettre.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+          console.warn('API MySQL:', json.error || 'erreur inconnue');
+        }
+      } catch (e) {
+        /* API injoignable — l'article est quand même en localStorage */
+        console.warn('Backend PHP non disponible, sauvegardé en localStorage uniquement.', e);
+      } finally {
+        const btn = document.querySelector('.submit-btn');
+        if (btn) { btn.disabled = false; btn.textContent = '✦ Soumettre mon article'; }
+      }
+    }
+
+    /* 3. Afficher le panneau de confirmation */
     document.getElementById('submitForm').style.display = 'none';
     document.getElementById('guideBlock').style.display = 'none';
     document.getElementById('successTitre').textContent = `"${titre}"`;
