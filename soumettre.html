@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soumettre un Article — MinimalBlog</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Page hero compact ── */
+    .submit-hero {
+      background: var(--navy-900);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .submit-hero::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px; opacity: .35;
+    }
+    .submit-hero-eyebrow {
+      font-family: 'Lato', sans-serif;
+      font-size: .68rem; font-weight: 700;
+      letter-spacing: 5px; text-transform: uppercase;
+      color: var(--gold-400);
+      margin-bottom: 1.4rem;
+    }
+    .submit-hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 6vw, 4.8rem);
+      font-weight: 300; color: var(--cream);
+      letter-spacing: -1px; line-height: 1.05;
+      position: relative; z-index: 1;
+    }
+    .submit-hero h1 em { font-style: italic; color: var(--gold-300); }
+    .submit-hero-sub {
+      font-family: 'Lato', sans-serif;
+      font-size: .82rem; font-weight: 300;
+      color: rgba(245,238,221,.55);
+      letter-spacing: 2px;
+      margin-top: 1.2rem;
+      position: relative; z-index: 1;
+    }
+    .submit-hero-rule {
+      display: flex; align-items: center; gap: 1rem;
+      max-width: 300px; margin: 1.8rem auto 0;
+      position: relative; z-index: 1;
+    }
+    .submit-hero-rule span { flex: 1; height: 1px; background: rgba(192,148,80,.3); }
+    .submit-hero-rule i { width: 5px; height: 5px; background: var(--gold-500); border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Form wrapper ── */
+    .submit-wrap {
+      max-width: 780px; margin: 0 auto;
+      padding: 4rem 2.5rem 6rem;
+    }
+
+    .submit-info {
+      background: var(--white);
+      border: 1px solid var(--beige-100);
+      border-left: 3px solid var(--gold-500);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.5rem;
+      margin-bottom: 2.5rem;
+      font-size: .85rem;
+      color: var(--ink-600);
+      line-height: 1.7;
+    }
+    .submit-info strong { color: var(--navy-800); }
+
+    /* ── Form styles ── */
+    .submit-form {
+      background: var(--white);
+      border: 1px solid var(--beige-100);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 2.5rem;
+    }
+
+    .sf-group {
+      margin-bottom: 1.8rem;
+    }
+    .sf-group label {
+      display: block;
+      font-family: 'Lato', sans-serif;
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--ink-600);
+      margin-bottom: .6rem;
+    }
+    .sf-group label .req { color: var(--gold-600); margin-left: 2px; }
+    .sf-group input,
+    .sf-group select,
+    .sf-group textarea {
+      width: 100%;
+      padding: .8rem 1.1rem;
+      border: 1px solid var(--beige-200);
+      border-radius: var(--radius);
+      font-family: 'Lato', sans-serif;
+      font-size: .92rem;
+      color: var(--ink);
+      background: var(--white);
+      outline: none;
+      transition: border-color .25s, box-shadow .25s;
+      line-height: 1.6;
+    }
+    .sf-group input:focus,
+    .sf-group select:focus,
+    .sf-group textarea:focus {
+      border-color: var(--gold-400);
+      box-shadow: 0 0 0 3px rgba(192,148,80,.12);
+    }
+    .sf-group textarea {
+      resize: vertical;
+      min-height: 280px;
+    }
+    .sf-group .sf-hint {
+      font-size: .76rem;
+      color: var(--ink-400);
+      margin-top: .4rem;
+    }
+
+    .sf-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.4rem;
+    }
+    @media (max-width: 580px) { .sf-row { grid-template-columns: 1fr; } }
+
+    .sf-divider {
+      border: none;
+      border-top: 1px solid var(--beige-100);
+      margin: 2rem 0;
+    }
+
+    .char-counter {
+      font-size: .72rem;
+      color: var(--ink-400);
+      text-align: right;
+      margin-top: .35rem;
+    }
+    .char-counter.warn { color: #c0392b; }
+
+    .submit-btn {
+      display: inline-flex; align-items: center; gap: .7rem;
+      background: var(--navy-800);
+      color: var(--white);
+      border: none;
+      padding: .95rem 2.4rem;
+      font-family: 'Lato', sans-serif;
+      font-size: .78rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .submit-btn:hover {
+      background: var(--navy-600);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ── Success panel ── */
+    .success-panel {
+      display: none;
+      background: var(--white);
+      border: 1px solid var(--beige-100);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 3.5rem 2.5rem;
+      text-align: center;
+    }
+    .success-panel .success-icon {
+      font-size: 3.2rem;
+      margin-bottom: 1.2rem;
+    }
+    .success-panel h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem; font-weight: 400;
+      color: var(--navy-800);
+      margin-bottom: .7rem;
+    }
+    .success-panel p {
+      color: var(--ink-600);
+      font-size: .92rem;
+      max-width: 460px; margin: 0 auto 2rem;
+      line-height: 1.8;
+    }
+    .success-panel a {
+      font-family: 'Lato', sans-serif;
+      font-size: .75rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold-600);
+      border-bottom: 1px solid var(--gold-300);
+      padding-bottom: 2px;
+      transition: color .2s;
+    }
+    .success-panel a:hover { color: var(--gold-500); }
+
+    /* ── Guidelines aside ── */
+    .submit-guidelines {
+      background: var(--beige-50);
+      border: 1px solid var(--beige-100);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-top: 2rem;
+      font-size: .82rem;
+      color: var(--ink-600);
+    }
+    .submit-guidelines h4 {
+      font-family: 'Lato', sans-serif;
+      font-size: .68rem; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--navy-800);
+      margin-bottom: .9rem;
+    }
+    .submit-guidelines ul {
+      padding-left: 1.1rem;
+      line-height: 2;
+    }
+  </style>
+</head>
+<body>
+
+<div id="scrollProgress"></div>
+
+<header>
+  <nav class="nav-left">
+    <a href="index.html">Accueil</a>
+    <a href="index.html">Articles</a>
+  </nav>
+  <a href="index.html" class="logo">Minimal<span>·</span>Blog</a>
+  <nav class="nav-right">
+    <a href="soumettre.html" class="btn-admin" style="background:var(--gold-600)!important">Écrire</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="submit-hero">
+  <p class="submit-hero-eyebrow">— Partager votre voix —</p>
+  <h1><em>Soumettre</em><br>un article</h1>
+  <p class="submit-hero-sub">Votre plume, notre tribune</p>
+  <div class="submit-hero-rule">
+    <span></span><i></i><span></span>
+  </div>
+</div>
+
+<!-- FORM SECTION -->
+<div class="submit-wrap">
+
+  <div class="submit-info">
+    <strong>Comment ça marche ?</strong><br>
+    Remplissez le formulaire ci-dessous. Votre article sera examiné par l'équipe éditoriale avant publication.
+    Comptez <strong>24 à 48 heures</strong> pour l'examen. Nous vous contacterons par email si besoin.
+  </div>
+
+  <!-- Formulaire -->
+  <div class="submit-form" id="submitForm">
+    <div class="sf-row">
+      <div class="sf-group">
+        <label>Votre nom <span class="req">*</span></label>
+        <input type="text" id="sfNom" placeholder="Marie Laurent" maxlength="100">
+      </div>
+      <div class="sf-group">
+        <label>Votre email <span class="req">*</span></label>
+        <input type="email" id="sfEmail" placeholder="vous@exemple.com" maxlength="150">
+      </div>
+    </div>
+
+    <div class="sf-group">
+      <label>Titre de l'article <span class="req">*</span></label>
+      <input type="text" id="sfTitre" placeholder="Un titre accrocheur…" maxlength="255"
+             oninput="updateCounter(this,'sfTitreCount',255)">
+      <div class="char-counter" id="sfTitreCount">0 / 255</div>
+    </div>
+
+    <div class="sf-row">
+      <div class="sf-group">
+        <label>Catégorie <span class="req">*</span></label>
+        <select id="sfCategorie"></select>
+      </div>
+      <div class="sf-group">
+        <label>Image de couverture</label>
+        <input type="url" id="sfImage" placeholder="https://exemple.com/image.jpg">
+        <p class="sf-hint">URL d'une image (optionnel)</p>
+      </div>
+    </div>
+
+    <hr class="sf-divider">
+
+    <div class="sf-group">
+      <label>Contenu de l'article <span class="req">*</span></label>
+      <textarea id="sfContenu"
+        placeholder="Rédigez votre article ici…&#10;&#10;Séparez les paragraphes par une ligne vide."
+        oninput="updateCounter(this,'sfContenuCount',0)"></textarea>
+      <div class="char-counter" id="sfContenuCount">0 mots</div>
+      <p class="sf-hint">Minimum recommandé : 300 mots. Séparez les paragraphes par une ligne vide.</p>
+    </div>
+
+    <button class="submit-btn" onclick="soumettreArticle()">
+      ✦ Soumettre mon article
+    </button>
+  </div>
+
+  <!-- Panneau succès -->
+  <div class="success-panel" id="successPanel">
+    <div class="success-icon">✦</div>
+    <h2>Article soumis !</h2>
+    <p>
+      Merci pour votre contribution. Votre article <strong id="successTitre"></strong>
+      est en attente de validation par l'équipe éditoriale.
+      Vous recevrez une réponse dans les 48 heures.
+    </p>
+    <a href="index.html">← Retour aux articles</a>
+    &emsp;
+    <a href="soumettre.html" onclick="location.reload();return false;">Soumettre un autre article</a>
+  </div>
+
+  <!-- Conseils -->
+  <div class="submit-guidelines" id="guideBlock">
+    <h4>Conseils de rédaction</h4>
+    <ul>
+      <li>Choisissez un angle précis plutôt qu'un sujet trop large.</li>
+      <li>Structurez avec des paragraphes clairs séparés par des lignes vides.</li>
+      <li>Appuyez vos propos sur des faits, chiffres ou anecdotes concrètes.</li>
+      <li>Minimum recommandé : 300 mots pour un article de fond.</li>
+      <li>Les images doivent être libres de droits ou vous appartenir.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>&copy; 2025 <strong>MinimalBlog</strong> — Projet BD ESISA &nbsp;·&nbsp; Tous droits réservés</p>
+</footer>
+
+<script src="js/db.js"></script>
+<script>
+  DB.init();
+
+  /* Remplir le select catégories */
+  (function() {
+    const cats = DB.getCategories();
+    const sel = document.getElementById('sfCategorie');
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.nom;
+      sel.appendChild(opt);
+    });
+  })();
+
+  /* Compteur de caractères / mots */
+  function updateCounter(el, counterId, max) {
+    const counter = document.getElementById(counterId);
+    if (max > 0) {
+      const len = el.value.length;
+      counter.textContent = `${len} / ${max}`;
+      counter.classList.toggle('warn', len > max * 0.9);
+    } else {
+      const words = el.value.trim() === '' ? 0 : el.value.trim().split(/\s+/).length;
+      counter.textContent = `${words} mot${words !== 1 ? 's' : ''}`;
+      counter.classList.toggle('warn', words < 300 && words > 0);
+    }
+  }
+
+  /* Scroll progress */
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    document.getElementById('scrollProgress').style.width = (pct * 100) + '%';
+  }, { passive: true });
+
+  /* Soumettre */
+  function soumettreArticle() {
+    const nom     = document.getElementById('sfNom').value.trim();
+    const email   = document.getElementById('sfEmail').value.trim();
+    const titre   = document.getElementById('sfTitre').value.trim();
+    const catId   = parseInt(document.getElementById('sfCategorie').value);
+    const image   = document.getElementById('sfImage').value.trim();
+    const contenu = document.getElementById('sfContenu').value.trim();
+
+    if (!nom)    { flashError('sfNom',    'Votre nom est requis.'); return; }
+    if (!email || !email.includes('@')) { flashError('sfEmail', 'Adresse email invalide.'); return; }
+    if (!titre)  { flashError('sfTitre',  'Le titre est requis.'); return; }
+    if (!contenu){ flashError('sfContenu','Le contenu est requis.'); return; }
+    const wordCount = contenu.split(/\s+/).length;
+    if (wordCount < 50) {
+      flashError('sfContenu', 'L\'article est trop court (minimum 50 mots).');
+      return;
+    }
+
+    DB.addArticle({
+      titre,
+      auteur: nom,
+      email_auteur: email,
+      contenu,
+      categorie_id: catId,
+      statut: 'soumis',
+      image_principale: image || ''
+    });
+
+    document.getElementById('submitForm').style.display = 'none';
+    document.getElementById('guideBlock').style.display = 'none';
+    document.getElementById('successTitre').textContent = `"${titre}"`;
+    document.getElementById('successPanel').style.display = 'block';
+    window.scrollTo({ top: document.querySelector('.submit-wrap').offsetTop - 80, behavior: 'smooth' });
+  }
+
+  function flashError(fieldId, msg) {
+    const el = document.getElementById(fieldId);
+    el.style.borderColor = '#c0392b';
+    el.style.boxShadow = '0 0 0 3px rgba(192,57,43,.12)';
+    showNotification(msg, 'error');
+    el.focus();
+    el.addEventListener('input', function once() {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+      el.removeEventListener('input', once);
+    });
+  }
+</script>
+</body>
+</html>

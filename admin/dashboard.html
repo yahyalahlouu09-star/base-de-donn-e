@@ -70,6 +70,7 @@
   const articles = DB.getArticles();
   const publies = DB.getArticles('publie');
   const brouillons = DB.getArticles('brouillon');
+  const soumis = DB.getArticles('soumis');
   const allComs = DB.getCommentaires();
   const comsPending = DB.getCommentaires(null, false);
   const cats = DB.getCategories();
@@ -83,6 +84,11 @@
       <div class="stat-number">${publies.length}</div>
       <div class="stat-label">Articles publiés</div>
     </div>
+    <div class="stat-card" style="border-color:#e67e22">
+      <div class="stat-number">${soumis.length}</div>
+      <div class="stat-label">⏳ À valider</div>
+      ${soumis.length > 0 ? `<a href="articles.html?statut=soumis" style="font-size:.7rem;color:#e67e22;display:block;margin-top:.3rem">Examiner →</a>` : ''}
+    </div>
     <div class="stat-card" style="border-color:#ffc107">
       <div class="stat-number">${brouillons.length}</div>
       <div class="stat-label">Brouillons</div>
@@ -95,10 +101,6 @@
       <div class="stat-number">${comsPending.length}</div>
       <div class="stat-label">En attente modération</div>
     </div>
-    <div class="stat-card" style="border-color:#6f42c1">
-      <div class="stat-number">${cats.length}</div>
-      <div class="stat-label">Catégories</div>
-    </div>
   `;
 
   // ---- Articles récents ----
@@ -109,7 +111,7 @@
         <div style="font-size:.88rem;font-weight:700;color:var(--navy-800);font-family:'Lato',sans-serif">${escapeHtml(a.titre.substring(0, 45))}${a.titre.length > 45 ? '…' : ''}</div>
         <div style="font-size:.75rem;color:var(--ink-400);font-family:'Lato',sans-serif">${formatDateShort(a.date_publication)}</div>
       </div>
-      <span class="status-badge status-${a.statut}">${a.statut === 'publie' ? 'Publié' : 'Brouillon'}</span>
+      <span class="status-badge status-${a.statut}">${a.statut === 'publie' ? 'Publié' : a.statut === 'soumis' ? '⏳ En attente' : 'Brouillon'}</span>
     </div>
   `).join('') || '<div class="empty-state">Aucun article.</div>';
 

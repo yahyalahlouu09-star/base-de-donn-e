@@ -830,6 +830,9 @@ nav a:hover::after, .nav-left a:hover::after, .nav-right a:hover::after { width:
 .status-brouillon, .status-pending {
   background:#fef8ec; color:#7a5a10; border:1px solid #f0d88a;
 }
+.status-soumis {
+  background:#fef3e2; color:#a04500; border:1px solid #f5c98a;
+}
 
 .actions { display:flex; gap:.4rem; }
 
